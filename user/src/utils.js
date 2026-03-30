@@ -1,18 +1,30 @@
 import { BOOKING_TRIGGER } from './shop';
 
+/** Production API (deployed backend). Override with ?api= or VITE_API_BASE in .env.production. */
+const DEFAULT_PRODUCTION_API_ORIGIN = 'https://barbar-shop-booking-chatbot-tspg.vercel.app';
+
 export function getApiBase() {
-  let API_BASE = '';
   try {
     const fromQuery = new URLSearchParams(window.location.search).get('api');
-    if (fromQuery) {
-      API_BASE = fromQuery.replace(/\/$/, '');
-    } else if (location.protocol !== 'http:' && location.protocol !== 'https:') {
-      API_BASE = 'http://localhost:3000';
+    if (fromQuery) return fromQuery.replace(/\/$/, '');
+  } catch {
+    // ignore
+  }
+  if (import.meta.env.DEV) {
+    return '';
+  }
+  const envBase = import.meta.env.VITE_API_BASE;
+  if (envBase && String(envBase).trim()) {
+    return String(envBase).trim().replace(/\/$/, '');
+  }
+  try {
+    if (location.protocol !== 'http:' && location.protocol !== 'https:') {
+      return 'http://localhost:3000';
     }
   } catch {
-    API_BASE = 'http://localhost:3000';
+    return 'http://localhost:3000';
   }
-  return API_BASE;
+  return DEFAULT_PRODUCTION_API_ORIGIN.replace(/\/$/, '');
 }
 
 export function clientDeviceHint() {

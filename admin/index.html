@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -1727,12 +1727,23 @@ function hasStoredOrUrlCredential() {
 }
 
 function apiBase() {
+  var PRODUCTION_API = 'https://barbar-shop-booking-chatbot-tspg.vercel.app'.replace(/\/$/, '');
   try {
-    const q = new URLSearchParams(location.search).get('api');
+    var q = new URLSearchParams(location.search).get('api');
     if (q) return q.replace(/\/$/, '');
-    if (location.protocol === 'http:' || location.protocol === 'https:') return '';
+    var proto = location.protocol;
+    var host = location.hostname || '';
+    var isLocal =
+      host === 'localhost' ||
+      host === '127.0.0.1' ||
+      host === '[::1]' ||
+      (host.length > 0 && host.endsWith && host.endsWith('.local'));
+    if (isLocal && (proto === 'http:' || proto === 'https:')) return '';
+    if (proto !== 'http:' && proto !== 'https:') return 'http://localhost:3000';
+    return PRODUCTION_API;
+  } catch (_) {
     return 'http://localhost:3000';
-  } catch (_) { return 'http://localhost:3000'; }
+  }
 }
 
 function normalizeEmailInput(raw) {
