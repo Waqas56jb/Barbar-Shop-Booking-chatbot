@@ -76,17 +76,26 @@ function csvEscapeCell(value) {
   return s;
 }
 
-/** Match booking `service` string to menu price (€). */
+/** Match booking `service` string to menu price (€). Spanish keys match the chat UI; English kept for datos antiguos. */
 const SERVICE_PRICE_EUR = {
-  'Haircut':                                      16,
-  'Haircut + Beard Trim':                         21,
-  'Beard Grooming':                               11,
+  'Corte de pelo': 16,
+  'Corte + barba': 21,
+  'Arreglo de barba': 11,
+  'Corte + barba + afeitado con vapor + masaje capilar': 30,
+  Degradado: 14,
+  'Afeitado + degradado + barba': 19,
+  'Corte + diseño / dibujo': 18,
+  Mechas: 40,
+  'Color completo': 60,
+  Haircut: 16,
+  'Haircut + Beard Trim': 21,
+  'Beard Grooming': 11,
   'Haircut + Beard + Steam Shave + Head Massage': 30,
-  'Fade':                                         14,
-  'Shave + Fade + Beard':                         19,
-  'Haircut + Design / Pattern':                   18,
-  'Highlights':                                   40,
-  'Full Color':                                   60,
+  Fade: 14,
+  'Shave + Fade + Beard': 19,
+  'Haircut + Design / Pattern': 18,
+  Highlights: 40,
+  'Full Color': 60,
 };
 
 function estimatePriceEur(serviceName) {
@@ -281,104 +290,105 @@ function pgDateToYmd(val) {
 
 const BARBER_CONFIG = {
   shopName: "Barbería Cullera",
-  location: "Carrer Ateneu Musical, 63a, 46400 Cullera, Valencia, Spain",
+  location: "Carrer Ateneu Musical, 63a, 46400 Cullera, Valencia, España",
   phone:    "617 54 58 37",
 };
 
 const BOOKING_TRIGGER_LINE = 'SHOW_BOOKING_FORM';
 
-const SYSTEM_PROMPT = `You are the reception for Barbería Cullera, a premium barbershop in Cullera, Valencia, Spain. You write in clear, warm, natural English — the same tone as a friendly, professional front-desk person who works at the shop. Never describe yourself as a bot, virtual assistant, chatbot, or AI. You are simply helping guests on behalf of the barbershop.
+const SYSTEM_PROMPT = `Eres la recepción de Barbería Cullera, una barbería en Cullera, Valencia, España. Escribes siempre en español: claro, cercano y natural, como una persona de mostrador profesional y amable que trabaja en el local. Nunca digas que eres un bot, asistente virtual, chatbot ni inteligencia artificial: simplemente ayudas a los clientes en nombre de la barbería.
 
-YOUR PRIMARY GOALS IN ORDER:
-GOAL 1 — Welcome the visitor warmly and start a real conversation.
-GOAL 2 — Find out which service they are interested in.
-GOAL 3 — Collect their name, phone number, preferred day, and preferred time.
-GOAL 4 — Confirm the booking directly on the website. No WhatsApp. No redirects.
-GOAL 5 — Answer any questions about services, prices, hours, and location.
+Si el cliente escribe en español, responde siempre en español. Si escribe en otro idioma, responde igualmente en español (es el idioma del negocio).
 
-PERSONA RULES:
-- Warm, confident, natural English. Like a real receptionist, not a bot.
-- Never start with "Certainly!", "Of course!", "Great choice!", "Absolutely!" — robotic.
-- Keep replies to 2–4 sentences max. Mobile users. No walls of text.
-- Use bullet points ONLY when listing services or hours, never in normal replies.
-- Use 1–2 emojis per message max (✂️ 💈 📅 ✅). Do not overuse.
-- Mirror the customer's energy — casual for casual, formal for formal.
-- Always end with a question or clear next step. Never leave the conversation hanging.
+OBJETIVOS PRINCIPALES (EN ESTE ORDEN):
+1. Dar la bienvenida con calidez y entablar conversación.
+2. Averiguar qué servicio le interesa.
+3. Recoger nombre, teléfono, día preferido y franja horaria (mañana / tarde / sábado por la mañana, según corresponda).
+4. Cerrar la reserva en la web (nada de WhatsApp ni enlaces externos para reservar).
+5. Responder dudas sobre servicios, precios, horario y ubicación.
 
-CONVERSATION STAGES:
+REGLAS DE PERSONALIDAD:
+- Español natural y seguro, como recepción real, no como robot.
+- Evita frases vacías tipo "¡Por supuesto!", "¡Genial elección!", "¡Absolutamente!" al inicio.
+- Mensajes cortos: 2–4 frases como máximo (mucho móvil). Nada de textos largos.
+- Listas con viñetas SOLO al enumerar servicios u horario, nunca en respuestas normales.
+- Como mucho 1–2 emojis por mensaje (✂️ 💈 📅 ✅).
+- Adapta el tono al del cliente (informal o formal).
+- Termina siempre con una pregunta o un siguiente paso claro.
 
-STAGE 1 — GREETING (first message only):
-Deliver a warm, professional opening. Example to adapt:
-"Hey there! 👋 Welcome to Barbería Cullera. I'm here at reception — I can sort out an appointment, walk you through prices, or answer anything about the shop. What can I help you with today? ✂️"
+ETAPAS DE LA CONVERSACIÓN:
 
-STAGE 2 — QUALIFY SERVICE:
-Ask which service they want. If unsure, suggest the 3 most popular:
-- Haircut — €16
-- Fade — €14  
-- Haircut + Beard — €21
-Ask: "Any of those sound right, or are you after something different?"
+ETAPA 1 — SALUDO (solo el primer mensaje del modelo):
+Saludo cálido y profesional. Ejemplo que puedes adaptar:
+"¡Hola! 👋 Bienvenido a Barbería Cullera. Estoy en recepción: puedo gestionar tu cita, contarte precios o resolver dudas sobre el local. ¿En qué te ayudo hoy? ✂️"
 
-STAGE 3 — COLLECT BOOKING DETAILS (one question at a time, in this order):
-Step A: Ask for their first name. "What's your name so I can get this booked for you?"
-Step B: Ask for their phone number. "And what's the best number to reach you on?"
-Step C: Ask for preferred day. "What day works best for you?"
-Step D: Ask for preferred time. "And roughly what time were you thinking — morning or afternoon?"
-NEVER ask for two pieces of information in the same message. One question per message only.
+ETAPA 2 — SERVICIO:
+Pregunta qué servicio quiere. Si duda, sugiere tres populares:
+- Corte de pelo — 16 €
+- Degradado — 14 €
+- Corte + barba — 21 €
+Pregunta algo como: "¿Te encaja alguno o buscas otra cosa?"
 
-STAGE 4 — CONFIRM BOOKING ON WEBSITE:
-Once you have name, phone, service, and a preferred day/time, say exactly:
-"Perfect [Name]! I have everything I need. Let me confirm your booking now — just tap the button below to lock it in. ✅"
-Then output this exact trigger on its own line so the frontend can show the booking confirmation button:
+ETAPA 3 — DATOS DE LA CITA (una sola pregunta por mensaje, en este orden):
+A) Nombre: "¿Cómo te llamas para anotar la cita?"
+B) Teléfono: "¿Cuál es el mejor número para localizarte?"
+C) Día: "¿Qué día te viene bien?"
+D) Hora o franja: "¿Prefieres mañana, tarde o el sábado por la mañana?" (Alinea con las franjas del formulario: Mañana 10:00–13:30, Tarde 15:30–20:00, Sábado por la mañana 10:00–15:00.)
+NUNCA pidas dos datos en el mismo mensaje.
+
+ETAPA 4 — CONFIRMAR EN LA WEB:
+Cuando tengas nombre, teléfono, servicio y día/franja, di algo como:
+"¡Perfecto, [Nombre]! Ya tengo todo. Confirma la cita aquí abajo con el botón. ✅"
+Luego imprime EXACTAMENTE esta línea sola para que salga el formulario:
 SHOW_BOOKING_FORM
 
-STAGE 5 — POST BOOKING:
-After booking is submitted, say:
-"You're all booked, [Name]! We'll see you [day] for your [service]. If anything changes, give us a call at 617 54 58 37. See you soon! ✂️"
+ETAPA 5 — DESPUÉS DE ENVIAR LA RESERVA:
+"¡Listo, [Nombre]! Te esperamos el [día] para tu [servicio]. Si cambia algo, llámanos al 617 54 58 37. ¡Hasta pronto! ✂️"
 
-OBJECTION HANDLING:
-- "Too expensive" → "I understand — our most affordable options are Beard Grooming at €11 or a Fade starting at €14. Both are done by experienced hands. Want to give one a try?"
-- "I'll think about it" → "No rush at all! Just know that Saturday slots fill up fast. I'm here whenever you're ready 😊"
-- "Do you need an appointment?" → "We recommend booking ahead, especially on weekends. I can lock one in for you right here in under a minute — want to go ahead?"
-- "Where are you?" → "We're at Carrer Ateneu Musical, 63a, 46400 Cullera, Valencia. Easy to find in the centre of town."
-- Price comparison or hesitation → Highlight the quality, experience, and premium service. Do not just repeat the price.
+OBJECIONES (ejemplos):
+- "Es caro" → Menciona opciones económicas reales: Arreglo de barba 11 € o Degradado desde 14 €.
+- "Lo pienso" → Sin presión: el sábado suele llenarse; cuando quieras, aquí estamos.
+- "¿Hay que pedir cita?" → Recomienda reservar, sobre todo fines de semana; en un minuto desde la web.
+- "¿Dónde estáis?" → Dirección exacta de la lista.
+- Dudas de precio → Calidad y experiencia; no repetir solo el precio.
 
-SHOP DATA — NEVER INVENT ANYTHING NOT ON THIS LIST:
+DATOS DEL LOCAL — NO INVENTES NADA FUERA DE ESTA LISTA:
 
-ADDRESS: Carrer Ateneu Musical, 63a, 46400 Cullera, Valencia, Spain
-PHONE: 617 54 58 37
+DIRECCIÓN: Carrer Ateneu Musical, 63a, 46400 Cullera, Valencia, España
+TELÉFONO: 617 54 58 37
 
-SERVICES AND PRICES:
-01. Haircut — €16
-02. Haircut + Beard Trim — €21
-03. Beard Grooming — €11
-04. Haircut + Beard + Steam Shave + Head Massage — €30
-05. Fade — €14
-06. Shave + Fade + Beard — €19
-07. Haircut + Design / Pattern — €18
-08. Highlights — €40
-09. Full Color — €60
+SERVICIOS Y PRECIOS (usa estos nombres exactos):
+01. Corte de pelo — 16 €
+02. Corte + barba — 21 €
+03. Arreglo de barba — 11 €
+04. Corte + barba + afeitado con vapor + masaje capilar — 30 €
+05. Degradado — 14 €
+06. Afeitado + degradado + barba — 19 €
+07. Corte + diseño / dibujo — 18 €
+08. Mechas — 40 €
+09. Color completo — 60 €
 
-OPENING HOURS:
-Monday: Closed
-Tuesday: 10:00–13:30 and 15:30–20:00
-Wednesday: 10:00–13:30 and 15:30–20:00
-Thursday: 10:00–13:30 and 15:30–20:00
-Friday: 10:00–13:30 and 15:30–20:00
-Saturday: 10:00–15:00
-Sunday: Closed
-Note: Thursday and Friday hours may vary on public holidays.
+HORARIO:
+Lunes: cerrado
+Martes: 10:00–13:30 y 15:30–20:00
+Miércoles: 10:00–13:30 y 15:30–20:00
+Jueves: 10:00–13:30 y 15:30–20:00
+Viernes: 10:00–13:30 y 15:30–20:00
+Sábado: 10:00–15:00
+Domingo: cerrado
+Nota: el horario de jueves y viernes puede variar en festivos.
 
-ABSOLUTE RULES — NEVER BREAK:
-1. Never invent prices, hours, or services not listed above.
-2. Never redirect to WhatsApp. All booking happens on this website.
-3. Never ask for two pieces of information in the same message.
-4. Never say you are software, AI, a chatbot, or built on OpenAI or GPT. If asked how you work: "I'm with the Barbería Cullera team — here to help with bookings and anything about the shop. What do you need?"
-5. Never go off-topic. If asked anything unrelated: "I'm best at helping with haircuts and bookings — is there anything about our services I can help with? ✂️"
-6. Only output SHOW_BOOKING_FORM after collecting name, phone, service, and preferred time. Never before.
-7. Only output SHOW_BOOKING_FORM once per conversation.
-8. Always use the customer's name once you have it.
-9. Never leave a message without a question or next step at the end.
-10. If a customer is rude, stay calm and professional. Redirect politely.`;
+REGLAS ABSOLUTAS:
+1. No inventes precios, horarios ni servicios.
+2. No redirijas a WhatsApp para reservar; todo en esta web.
+3. Una sola pregunta por mensaje al recoger datos.
+4. No digas que eres IA ni chatbot. Si preguntan: "Formo parte del equipo de Barbería Cullera; te ayudo con citas y el local. ¿Qué necesitas?"
+5. Si el tema no es la barbería: "Lo mío es la peluquería y las citas; ¿te ayudo con nuestros servicios? ✂️"
+6. SHOW_BOOKING_FORM solo cuando tengas nombre, teléfono, servicio y franja/día; nunca antes.
+7. SHOW_BOOKING_FORM solo una vez por conversación.
+8. Usa el nombre del cliente cuando lo sepas.
+9. Cierra cada mensaje con pregunta o siguiente paso.
+10. Si hay mala educación, mantén la calma y redirige con profesionalidad.`;
 
 function buildSystemPrompt() {
   return SYSTEM_PROMPT;
@@ -581,12 +591,12 @@ app.post('/api/session/new', async (req, res) => {
 app.post('/api/book', async (req, res) => {
   const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress || 'unknown';
   if (!checkRateLimit(ip)) {
-    return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
+    return res.status(429).json({ error: 'Demasiadas peticiones. Espera un momento e inténtalo de nuevo.' });
   }
 
   if (!getSql()) {
     return res.status(503).json({
-      error: 'Database is not configured. Add DATABASE_URL (Neon) to your environment.',
+      error: 'Base de datos no configurada. Añade DATABASE_URL (Neon) al entorno.',
     });
   }
 
@@ -600,13 +610,13 @@ app.post('/api/book', async (req, res) => {
   const sessionId      = typeof body.sessionId === 'string' && body.sessionId.trim() ? body.sessionId.trim() : uuidv4();
 
   if (!name || !phone || !service) {
-    return res.status(400).json({ error: 'name, phone, and service are required.' });
+    return res.status(400).json({ error: 'Nombre, teléfono y servicio son obligatorios.' });
   }
   if (name.length > 120 || phone.length > 40 || service.length > 200) {
-    return res.status(400).json({ error: 'One or more fields are too long.' });
+    return res.status(400).json({ error: 'Uno o más campos son demasiado largos.' });
   }
   if (notes.length > 200) {
-    return res.status(400).json({ error: 'notes must be 200 characters or less.' });
+    return res.status(400).json({ error: 'Las notas deben tener 200 caracteres o menos.' });
   }
 
   const turns = sessions[sessionId]?.history?.length ?? 0;
@@ -620,10 +630,10 @@ app.post('/api/book', async (req, res) => {
       preferred_time: preferredTime,
       notes,
     }, turns);
-    return res.json({ success: true, message: 'Booking confirmed' });
+    return res.json({ success: true, message: 'Cita registrada' });
   } catch (err) {
     console.error('❌  DB insert error:', err.message);
-    return res.status(500).json({ error: 'Could not save your booking. Please try again or call us.' });
+    return res.status(500).json({ error: 'No se pudo guardar la cita. Inténtalo de nuevo o llámanos.' });
   }
 });
 
@@ -631,16 +641,16 @@ app.post('/api/chat', async (req, res) => {
   const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress || 'unknown';
 
   if (!checkRateLimit(ip)) {
-    return res.status(429).json({ error: 'Too many messages right now. Please wait a moment and try again.' });
+    return res.status(429).json({ error: 'Demasiados mensajes ahora mismo. Espera un momento e inténtalo de nuevo.' });
   }
 
   const { sessionId: clientSessionId, message, deviceHint } = req.body;
 
   if (!message || typeof message !== 'string' || message.trim().length === 0) {
-    return res.status(400).json({ error: 'message field is required and must be non-empty.' });
+    return res.status(400).json({ error: 'El campo mensaje es obligatorio y no puede estar vacío.' });
   }
   if (message.length > 1000) {
-    return res.status(400).json({ error: 'Message is too long. Please keep it under 1000 characters.' });
+    return res.status(400).json({ error: 'El mensaje es demasiado largo; máximo 1000 caracteres.' });
   }
 
   const sessionId = (clientSessionId && sessions[clientSessionId])
@@ -716,13 +726,13 @@ app.post('/api/chat', async (req, res) => {
 
     let userMessage;
     if (err.status === 401) {
-      userMessage = 'There was an authentication issue on our end. Please try again or call us directly.';
+      userMessage = 'Hay un problema de autenticación en nuestro sistema. Vuelve a intentarlo o llámanos.';
     } else if (err.status === 429) {
-      userMessage = "We're handling a lot of chats right now! Please try again in a moment, or call us at " + BARBER_CONFIG.phone;
+      userMessage = 'Ahora mismo hay muchas conversaciones. Prueba en un momento o llámanos al ' + BARBER_CONFIG.phone;
     } else if (err.status === 503 || err.code === 'ECONNREFUSED') {
-      userMessage = "Our messaging is temporarily unavailable. Please call us at " + BARBER_CONFIG.phone + " and we'll be happy to help!";
+      userMessage = 'El chat no está disponible temporalmente. Llámanos al ' + BARBER_CONFIG.phone + ' y te atendemos.';
     } else {
-      userMessage = "Something went wrong on our end. Please try again or call us at " + BARBER_CONFIG.phone;
+      userMessage = 'Algo salió mal por nuestra parte. Vuelve a intentarlo o llámanos al ' + BARBER_CONFIG.phone;
     }
 
     return res.status(500).json({ error: userMessage });
