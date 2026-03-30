@@ -1,0 +1,28 @@
+# Environment
+.env
+.env.*
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Builds / Bundlers
+dist/
+build/
+.vite/
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+*.swp
+
+# Cursor / VSCode
+.vscode/
+.cursor/
+
+# Misc
+*.log
+

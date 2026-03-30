@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * ╔══════════════════════════════════════════════════════════════════╗
  * ║         Barbería Cullera — reception chat backend               ║
@@ -16,6 +17,7 @@
  * ╚══════════════════════════════════════════════════════════════════╝
  */
 
+const fs           = require('fs');
 const path         = require('path');
 const rootDir      = path.join(__dirname, '..');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
@@ -1364,8 +1366,26 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
-app.use('/admin', express.static(path.join(rootDir, 'admin')));
-app.use(express.static(path.join(rootDir, 'user')));
+{
+  const adminRootDir = path.join(rootDir, 'admin');
+  const adminDistDir = path.join(adminRootDir, 'dist');
+  const adminStaticDir = fs.existsSync(path.join(adminDistDir, 'index.html'))
+    ? adminDistDir
+    : adminRootDir;
+  app.use('/admin', express.static(adminStaticDir));
+  if (adminStaticDir === adminRootDir) {
+    console.warn('⚠️  admin/dist not found — run `npm run build` in /admin (or use Vite dev on :5174) for the React admin UI.\n');
+  }
+}
+const userAppRootDir = path.join(rootDir, 'user');
+const userAppDistDir = path.join(userAppRootDir, 'dist');
+const userAppStaticDir = fs.existsSync(path.join(userAppDistDir, 'index.html'))
+  ? userAppDistDir
+  : userAppRootDir;
+app.use(express.static(userAppStaticDir));
+if (userAppStaticDir === userAppRootDir) {
+  console.warn('⚠️  user/dist not found — run `npm run build` in /user (or use Vite dev on :5173) for the React chat UI.\n');
+}
 
 app.use((_req, res) => {
   res.status(404).json({ error: 'Route not found.' });
