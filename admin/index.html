@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>Administración — Barbería Cullera</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet"/>
@@ -53,6 +53,7 @@
 html{height:100%;scroll-behavior:smooth}
 body{
   height:100%;min-height:100vh;
+  min-height:100dvh;
   background:var(--bg);
   color:var(--text);
   font-family:var(--font-sans);
@@ -60,6 +61,8 @@ body{
   line-height:1.5;
   display:flex;
   overflow:hidden;
+  overflow-x:hidden;
+  -webkit-tap-highlight-color:transparent;
 }
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
@@ -74,14 +77,78 @@ input,select,textarea{font-family:var(--font-sans)}
   width:var(--sidebar-w);
   min-width:var(--sidebar-w);
   height:100vh;
+  height:100dvh;
+  max-height:-webkit-fill-available;
   background:var(--surface);
   border-right:1px solid var(--border);
   display:flex;
   flex-direction:column;
   position:fixed;
   left:0;top:0;bottom:0;
-  z-index:100;
+  z-index:200;
   overflow:hidden;
+  transition:transform .28s cubic-bezier(.4,0,.2,1),box-shadow .28s ease;
+  will-change:transform;
+}
+.sidebar-backdrop{
+  position:fixed;
+  inset:0;
+  z-index:150;
+  background:rgba(0,0,0,.55);
+  backdrop-filter:blur(2px);
+  -webkit-backdrop-filter:blur(2px);
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition:opacity .25s ease,visibility .25s ease;
+}
+body.admin-sidebar-open .sidebar-backdrop{
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+}
+.topbar-menu-btn{
+  display:none;
+  align-items:center;
+  justify-content:center;
+  width:40px;
+  height:40px;
+  flex-shrink:0;
+  margin-right:4px;
+  border-radius:var(--radius-sm);
+  border:1px solid var(--border2);
+  background:var(--card);
+  color:var(--gold2);
+  font-size:1.15rem;
+  line-height:1;
+  cursor:pointer;
+  transition:border-color .15s,background .15s;
+}
+.topbar-menu-btn:hover{border-color:var(--gold-dim);background:var(--gold-glow)}
+.topbar-menu-btn .menu-icon{
+  display:block;
+  width:20px;height:14px;
+  position:relative;
+}
+.topbar-menu-btn .menu-icon::before,
+.topbar-menu-btn .menu-icon::after{
+  content:'';
+  position:absolute;
+  left:0;right:0;
+  height:2px;
+  background:currentColor;
+  border-radius:1px;
+}
+.topbar-menu-btn .menu-icon::before{top:0}
+.topbar-menu-btn .menu-icon::after{bottom:0}
+.topbar-menu-btn .menu-icon span{
+  position:absolute;
+  left:0;right:0;
+  top:6px;
+  height:2px;
+  background:currentColor;
+  border-radius:1px;
+  display:block;
 }
 
 .sidebar-logo{
@@ -204,7 +271,11 @@ input,select,textarea{font-family:var(--font-sans)}
 .main{
   margin-left:var(--sidebar-w);
   flex:1;
+  min-width:0;
+  width:0;
   height:100vh;
+  height:100dvh;
+  max-height:-webkit-fill-available;
   display:flex;
   flex-direction:column;
   overflow:hidden;
@@ -212,16 +283,19 @@ input,select,textarea{font-family:var(--font-sans)}
 
 /* Top header bar */
 .topbar{
-  height:var(--header-h);
+  min-height:var(--header-h);
   background:var(--surface);
   border-bottom:1px solid var(--border);
   display:flex;
+  flex-wrap:wrap;
   align-items:center;
   padding:0 24px;
   gap:14px;
   flex-shrink:0;
   position:relative;
   z-index:10;
+  padding-left:max(16px,env(safe-area-inset-left));
+  padding-right:max(16px,env(safe-area-inset-right));
 }
 .topbar-title{
   font-family:var(--font-serif);
@@ -229,9 +303,17 @@ input,select,textarea{font-family:var(--font-sans)}
   font-weight:700;
   color:var(--text);
   flex:1;
+  min-width:0;
+  line-height:1.2;
 }
 .topbar-title span{color:var(--gold)}
-.topbar-actions{display:flex;align-items:center;gap:8px}
+.topbar-actions{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:8px;
+  min-width:0;
+}
 
 .admin-load-banner{
   margin:0 24px 12px;
@@ -302,7 +384,10 @@ input,select,textarea{font-family:var(--font-sans)}
 .content{
   flex:1;
   overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
   padding:24px;
+  padding-bottom:max(24px,env(safe-area-inset-bottom));
   display:none;/* pages hidden by default */
 }
 .content.active{display:block}
@@ -1027,7 +1112,108 @@ tr:hover td{background:rgba(255,255,255,.015)}
 }
 .admin-loader-retry:hover{filter:brightness(1.08)}
 .admin-loader-retry[hidden]{display:none!important}
-</style>
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE — tablet, móvil, escritorio
+═══════════════════════════════════════════ */
+@media (max-width:1280px){
+  .stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .insight-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .lead-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .two-col{grid-template-columns:1fr}
+  .settings-grid{grid-template-columns:1fr}
+  div.chart-grid{grid-template-columns:1fr!important}
+}
+@media (max-width:1023px){
+  body.admin-sidebar-open{
+    overflow:hidden;
+    touch-action:none;
+  }
+  .topbar-menu-btn{display:flex}
+  .sidebar{
+    width:min(280px,88vw);
+    min-width:min(280px,88vw);
+    transform:translateX(-100%);
+    box-shadow:none;
+  }
+  body.admin-sidebar-open .sidebar{
+    transform:translateX(0);
+    box-shadow:8px 0 32px rgba(0,0,0,.45);
+  }
+  .sidebar-nav{
+    padding-bottom:max(20px,env(safe-area-inset-bottom));
+  }
+  .sidebar-footer{
+    padding-bottom:max(14px,env(safe-area-inset-bottom));
+  }
+  .main{
+    margin-left:0;
+    width:100%;
+  }
+  .topbar{
+    gap:10px;
+    padding-top:10px;
+    padding-bottom:10px;
+  }
+  .topbar-title{
+    font-size:1.22rem;
+    flex:1 1 auto;
+    min-width:120px;
+  }
+  .topbar-actions{
+    flex:1 1 100%;
+    justify-content:flex-start;
+    row-gap:8px;
+  }
+  .date-filter{flex:1 1 auto;min-width:0;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap}
+  .date-filter button{flex:0 0 auto;touch-action:manipulation;min-height:40px;padding:8px 14px}
+  .topbar-btn{min-height:40px;touch-action:manipulation}
+  .avatar-btn{width:40px;height:40px;touch-action:manipulation}
+  .chart-wrap{height:min(220px,45vw)}
+  .chart-wrap-sm{height:150px}
+  .chart-wrap-lg{height:220px}
+  .content{padding:16px 14px}
+  .admin-load-banner{margin-left:14px;margin-right:14px}
+  .stat-grid{gap:12px}
+  .stat-value{font-size:1.65rem}
+}
+@media (max-width:767px){
+  body{font-size:13px}
+  .stat-grid{grid-template-columns:1fr}
+  .insight-grid{grid-template-columns:1fr}
+  .lead-grid{grid-template-columns:1fr}
+  .topbar-title{font-size:1.05rem}
+  .stat-card{padding:14px 16px}
+  .chart-card{padding:14px}
+  .chart-header{flex-direction:column;align-items:flex-start;gap:8px}
+  .chart-value{text-align:left}
+  .chart-value-label{text-align:left}
+  .table-toolbar{flex-wrap:wrap;align-items:stretch}
+  .table-search{min-width:0;width:100%;flex:1 1 100%;min-height:44px}
+  .table-filter-btn{min-height:40px;touch-action:manipulation}
+  .table-card table{min-width:640px}
+  .table-card table#leadsTable{min-width:720px}
+  th,td{padding:10px 12px}
+  .section-header{flex-direction:column;align-items:flex-start;gap:8px}
+  .heatmap-day-label{font-size:.55rem}
+  .heatmap-grid,.heatmap-label-row{gap:3px}
+  .appt-item{flex-wrap:wrap;gap:10px}
+  .appt-right{width:100%;justify-content:space-between}
+  .table-pagination{flex-direction:column;gap:10px;align-items:flex-start}
+}
+@media (max-width:479px){
+  .logo-text{font-size:1.05rem}
+  .sidebar-logo{padding:16px 14px 12px}
+  .sidebar-nav{padding:8px}
+  .nav-item{padding:11px 12px;font-size:.85rem;min-height:44px}
+  .date-filter button{padding:8px 10px;font-size:.7rem}
+  .topbar-btn{padding:8px 10px;font-size:.68rem}
+  .stat-change-label{display:block;margin-left:0;margin-top:4px}
+}
+@media (min-width:1024px){
+  body.admin-sidebar-open .sidebar{transform:none;box-shadow:none}
+  body.admin-sidebar-open .sidebar-backdrop{opacity:0;visibility:hidden;pointer-events:none}
+}
 </head>
 <body>
 
@@ -1136,7 +1322,8 @@ tr:hover td{background:rgba(255,255,255,.015)}
 <!-- ══════════════════════════════════════════
      SIDEBAR
 ══════════════════════════════════════════ -->
-<aside class="sidebar">
+<div class="sidebar-backdrop" id="sidebarBackdrop" aria-hidden="true"></div>
+<aside class="sidebar" id="adminSidebar" aria-label="Navegación principal">
   <div class="sidebar-logo">
     <div class="logo-mark">
       <div class="logo-icon">✂️</div>
@@ -1206,6 +1393,9 @@ tr:hover td{background:rgba(255,255,255,.015)}
 
   <!-- TOP BAR -->
   <div class="topbar">
+    <button type="button" class="topbar-menu-btn" id="btnSidebarToggle" aria-label="Abrir o cerrar menú" aria-expanded="false" aria-controls="adminSidebar">
+      <span class="menu-icon" aria-hidden="true"><span></span></span>
+    </button>
     <div class="topbar-title" id="pageTitle">Panel <span>Resumen</span></div>
     <div class="topbar-actions">
       <div class="date-filter">
@@ -2026,6 +2216,20 @@ const pageTitles = {
   settings:     ['Ajustes','Configuración'],
 };
 
+function isMobileSidebarMode() {
+  return typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 1023px)').matches;
+}
+
+function setSidebarOpen(open) {
+  document.body.classList.toggle('admin-sidebar-open', open);
+  var b = document.getElementById('btnSidebarToggle');
+  if (b) b.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+
+function closeSidebarMobile() {
+  if (isMobileSidebarMode()) setSidebarOpen(false);
+}
+
 function showPage(id, btn) {
   document.querySelectorAll('.content').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -2033,6 +2237,27 @@ function showPage(id, btn) {
   if(btn) btn.classList.add('active');
   const t = pageTitles[id] || [id,''];
   document.getElementById('pageTitle').innerHTML = `${t[0]} <span>${t[1]}</span>`;
+  closeSidebarMobile();
+}
+
+function wireResponsiveSidebar() {
+  var toggle = document.getElementById('btnSidebarToggle');
+  var backdrop = document.getElementById('sidebarBackdrop');
+  if (toggle) {
+    toggle.addEventListener('click', function () {
+      if (!isMobileSidebarMode()) return;
+      setSidebarOpen(!document.body.classList.contains('admin-sidebar-open'));
+    });
+  }
+  if (backdrop) {
+    backdrop.addEventListener('click', function () { setSidebarOpen(false); });
+  }
+  window.addEventListener('resize', function () {
+    if (!isMobileSidebarMode()) setSidebarOpen(false);
+  });
+  window.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') setSidebarOpen(false);
+  });
 }
 
 function setFilter(f, btn) {
@@ -2987,6 +3212,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   bootstrapAdmin();
+  wireResponsiveSidebar();
 
   const ex = document.getElementById('btnExportCsv');
   if (ex) {
