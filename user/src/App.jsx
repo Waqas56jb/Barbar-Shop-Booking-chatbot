@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BOOKING_TRIGGER, SHOP } from './shop';
+import { BOOKING_TRIGGER, BOOKING_USER_MESSAGE, SHOP } from './shop';
 import {
   clientDeviceHint,
   escapeHtml,
@@ -48,11 +48,11 @@ function BookingFormCard({ sessionIdRef, userTexts, onSuccess }) {
     const t = preferredTime.trim();
     const note = notes.trim();
     if (!n || !p || !s || !d || !t) {
-      setError('Please fill in all required fields.');
+      setError('Completa todos los campos obligatorios.');
       return;
     }
     if (note.length > 200) {
-      setError('Notes must be 200 characters or less.');
+      setError('Las notas no pueden superar los 200 caracteres.');
       return;
     }
     setSubmitting(true);
@@ -72,23 +72,23 @@ function BookingFormCard({ sessionIdRef, userTexts, onSuccess }) {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(data.error || 'Something went wrong. Please try again.');
+        setError(data.error || 'Algo salió mal. Vuelve a intentarlo.');
         setSubmitting(false);
         return;
       }
       onSuccess({ name: n, service: s, preferredDate: d, preferredTime: t });
     } catch {
-      setError('Network error. Check your connection and try again.');
+      setError('Error de red. Comprueba tu conexión e inténtalo de nuevo.');
       setSubmitting(false);
     }
   };
 
   return (
     <div className="info-card booking-card">
-      <div className="ic-title">📅 Confirm your appointment</div>
+      <div className="ic-title">📅 Confirma tu cita</div>
       <form className="booking-form-inner" noValidate onSubmit={onSubmit}>
         <div className="bf-field">
-          <label htmlFor="bf-name">Name</label>
+          <label htmlFor="bf-name">Nombre</label>
           <input
             id="bf-name"
             name="name"
@@ -100,7 +100,7 @@ function BookingFormCard({ sessionIdRef, userTexts, onSuccess }) {
           />
         </div>
         <div className="bf-field">
-          <label htmlFor="bf-phone">Phone</label>
+          <label htmlFor="bf-phone">Teléfono</label>
           <input
             id="bf-phone"
             name="phone"
@@ -112,7 +112,7 @@ function BookingFormCard({ sessionIdRef, userTexts, onSuccess }) {
           />
         </div>
         <div className="bf-field">
-          <label htmlFor="bf-service">Service</label>
+          <label htmlFor="bf-service">Servicio</label>
           <select
             id="bf-service"
             name="service"
@@ -121,7 +121,7 @@ function BookingFormCard({ sessionIdRef, userTexts, onSuccess }) {
             onChange={(e) => setService(e.target.value)}
           >
             <option value="" disabled>
-              Select a service…
+              Elige un servicio…
             </option>
             {SHOP.services.map((sv) => (
               <option key={sv.name} value={sv.name}>
@@ -131,7 +131,7 @@ function BookingFormCard({ sessionIdRef, userTexts, onSuccess }) {
           </select>
         </div>
         <div className="bf-field">
-          <label htmlFor="bf-date">Preferred date</label>
+          <label htmlFor="bf-date">Fecha preferida</label>
           <input
             type="date"
             id="bf-date"
@@ -143,7 +143,7 @@ function BookingFormCard({ sessionIdRef, userTexts, onSuccess }) {
           />
         </div>
         <div className="bf-field">
-          <label htmlFor="bf-time">Preferred time</label>
+          <label htmlFor="bf-time">Franja horaria</label>
           <select
             id="bf-time"
             name="preferredTime"
@@ -152,16 +152,16 @@ function BookingFormCard({ sessionIdRef, userTexts, onSuccess }) {
             onChange={(e) => setPreferredTime(e.target.value)}
           >
             <option value="" disabled>
-              Select a time…
+              Elige una franja…
             </option>
-            <option value="Morning (10:00–13:30)">Morning (10:00–13:30)</option>
-            <option value="Afternoon (15:30–20:00)">Afternoon (15:30–20:00)</option>
-            <option value="Saturday morning (10:00–15:00)">Saturday morning (10:00–15:00)</option>
+            <option value="Mañana (10:00–13:30)">Mañana (10:00–13:30)</option>
+            <option value="Tarde (15:30–20:00)">Tarde (15:30–20:00)</option>
+            <option value="Sábado por la mañana (10:00–15:00)">Sábado por la mañana (10:00–15:00)</option>
           </select>
         </div>
         <div className="bf-field">
           <label htmlFor="bf-notes">
-            Notes{' '}
+            Notas{' '}
             <span
               style={{
                 fontWeight: 400,
@@ -170,14 +170,14 @@ function BookingFormCard({ sessionIdRef, userTexts, onSuccess }) {
                 color: 'var(--text-dim)',
               }}
             >
-              (optional)
+              (opcional)
             </span>
           </label>
           <textarea
             id="bf-notes"
             name="notes"
             maxLength={200}
-            placeholder="Any special requests?"
+            placeholder="¿Algún comentario o petición especial?"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
           />
@@ -186,7 +186,7 @@ function BookingFormCard({ sessionIdRef, userTexts, onSuccess }) {
           {error}
         </div>
         <button type="submit" className="btn-confirm-booking" disabled={submitting}>
-          Confirm Appointment ✅
+          Confirmar cita ✅
         </button>
       </form>
     </div>
@@ -201,13 +201,13 @@ export default function App() {
   const messagesRef = useRef(null);
   const inputRef = useRef(null);
 
-  const [blocks, setBlocks] = useState(() => [{ type: 'dateDivider', id: 'today', label: 'Today' }]);
+  const [blocks, setBlocks] = useState(() => [{ type: 'dateDivider', id: 'today', label: 'Hoy' }]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [sendDisabled, setSendDisabled] = useState(false);
 
   useEffect(() => {
-    if (API_BASE) console.info('[Chat] API:', API_BASE);
+    if (API_BASE) console.info('[Chat] API base:', API_BASE);
   }, [API_BASE]);
 
   useEffect(() => {
@@ -239,7 +239,7 @@ export default function App() {
           type: 'message',
           id: uid(),
           role: 'bot',
-          html: `Hey there! 👋 Welcome to <strong>Barbería Cullera</strong>. I'm here at reception — I can sort out an appointment, walk you through prices, or answer anything about the shop. What can I help you with today? ✂️`,
+          html: `¡Hola! 👋 Bienvenido a <strong>Barbería Cullera</strong>. Estoy en recepción: puedo gestionar tu cita, contarte precios o resolver cualquier duda sobre la barbería. ¿En qué te ayudo hoy? ✂️`,
           showLeadBadge: false,
           time: nowTime(),
         },
@@ -247,10 +247,10 @@ export default function App() {
           type: 'quickReplies',
           id: uid(),
           options: [
-            { label: 'Book an appointment 📅', message: "I'd like to book an appointment" },
-            'See services & prices 💈',
-            'Opening hours 🕐',
-            'Find us 📍',
+            { label: 'Reservar cita 📅', message: BOOKING_USER_MESSAGE },
+            'Servicios y precios 💈',
+            'Horario 🕐',
+            'Dónde estamos 📍',
           ],
         },
       ]);
@@ -301,19 +301,26 @@ export default function App() {
 
   const handleLocalShortcut = useCallback(
     (text) => {
-      const t = text.toLowerCase();
+      const t = text
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/\p{M}/gu, '');
 
-      if (/\b(services?|price|menu|list|how much|cost)\b/.test(t)) {
+      if (
+        /\b(servicio|servicios|precio|precios|menu|carta|lista|cuanto|coste|costo|tarifa|tarifas)\b/.test(
+          t,
+        )
+      ) {
         appendMessage(
           'bot',
-          "Here's our full service menu — tap any one to book it directly:",
+          'Aquí tienes la carta de servicios: toca el que quieras para reservarlo al momento:',
         );
         setBlocks((prev) => [...prev, { type: 'services', id: uid(), items: SHOP.services }]);
         return true;
       }
 
-      if (/\b(hour|open|clos|when|time|schedule|avail)\b/.test(t)) {
-        appendMessage('bot', 'Here are our opening hours for the week:');
+      if (/\b(horario|horarios|abierto|abre|abren|cerrado|cuando|atiende|atienden)\b/.test(t)) {
+        appendMessage('bot', 'Este es nuestro horario de la semana:');
         const rows = SHOP.hours
           .map(
             (h) =>
@@ -325,72 +332,72 @@ export default function App() {
           .join('');
         setBlocks((prev) => [
           ...prev,
-          { type: 'infoCard', id: uid(), title: '🕐 Opening Hours', bodyHtml: rows },
+          { type: 'infoCard', id: uid(), title: '🕐 Horario', bodyHtml: rows },
           {
             type: 'quickReplies',
             id: uid(),
             options: [
-              { label: 'Book a slot 📅', message: "I'd like to book an appointment" },
-              'View services 💈',
-              'Call us ☎️',
+              { label: 'Elegir franja 📅', message: BOOKING_USER_MESSAGE },
+              'Ver servicios 💈',
+              'Llamarnos ☎️',
             ],
           },
         ]);
         return true;
       }
 
-      if (/\b(where|location|address|map|direct|find you|how to get)\b/.test(t)) {
-        appendMessage('bot', 'You can find us right here in Cullera:');
+      if (/\b(donde|direccion|ubicacion|mapa|localizacion|como llegar|encontrar)\b/.test(t)) {
+        appendMessage('bot', 'Aquí nos tienes en Cullera:');
         setBlocks((prev) => [
           ...prev,
           {
             type: 'infoCard',
             id: uid(),
-            title: '📍 Our Address',
+            title: '📍 Dirección',
             bodyHtml: `<div class="ic-row">${SHOP.address}</div>
        <br>
-       <div class="ic-row"><a href="${SHOP.mapLink}" target="_blank" rel="noopener">Open in Google Maps →</a></div>`,
+       <div class="ic-row"><a href="${SHOP.mapLink}" target="_blank" rel="noopener">Abrir en el mapa →</a></div>`,
           },
           {
             type: 'quickReplies',
             id: uid(),
             options: [
-              { label: 'Book appointment 📅', message: "I'd like to book an appointment" },
-              'Our hours 🕐',
-              'Call us ☎️',
+              { label: 'Reservar cita 📅', message: BOOKING_USER_MESSAGE },
+              'Nuestro horario 🕐',
+              'Llamarnos ☎️',
             ],
           },
         ]);
         return true;
       }
 
-      if (/\b(call|phone|ring|number|contact)\b/.test(t)) {
-        appendMessage('bot', `You can reach us directly at <strong>${SHOP.phoneFmt}</strong> 📞`);
+      if (/\b(llamar|llamada|telefono|numero|contacto|marcar)\b/.test(t)) {
+        appendMessage('bot', `Puedes llamarnos directamente al <strong>${SHOP.phoneFmt}</strong> 📞`);
         setBlocks((prev) => [
           ...prev,
           {
             type: 'quickReplies',
             id: uid(),
             options: [
-              'Call now ☎️',
-              { label: 'Book appointment 📅', message: "I'd like to book an appointment" },
-              'Our hours 🕐',
+              'Llamar ahora ☎️',
+              { label: 'Reservar cita 📅', message: BOOKING_USER_MESSAGE },
+              'Nuestro horario 🕐',
             ],
           },
         ]);
         return true;
       }
 
-      if (/call now/.test(t)) {
+      if (/llamar ahora|llama ya|marcar ahora/.test(t)) {
         window.location.href = `tel:${SHOP.phone}`;
-        appendMessage('bot', 'Dialling now… ☎️ Speak soon!');
+        appendMessage('bot', 'Marcando… ☎️ ¡Hablamos enseguida!');
         return true;
       }
 
       if (/\bwhatsapp\b/.test(t)) {
         appendMessage(
           'bot',
-          'You can book everything right here in this chat — no WhatsApp needed. Want to start with a service? ✂️',
+          'Puedes reservar todo aquí en el chat, sin WhatsApp. ¿Quieres que empecemos por un servicio? ✂️',
         );
         setBlocks((prev) => [
           ...prev,
@@ -398,8 +405,8 @@ export default function App() {
             type: 'quickReplies',
             id: uid(),
             options: [
-              { label: 'Book an appointment 📅', message: "I'd like to book an appointment" },
-              'See services 💈',
+              { label: 'Reservar cita 📅', message: BOOKING_USER_MESSAGE },
+              'Ver servicios 💈',
             ],
           },
         ]);
@@ -468,7 +475,7 @@ export default function App() {
           appendMessage(
             'bot',
             err.error ||
-              `Something went wrong (${res.status}). Try again or call us at ${SHOP.phoneFmt} 📞`,
+              `Algo salió mal (${res.status}). Vuelve a intentarlo o llámanos al ${SHOP.phoneFmt} 📞`,
           );
           return;
         }
@@ -483,15 +490,15 @@ export default function App() {
         appendMessage('bot', displayReply, false);
         if (showForm) appendBookingForm();
       } catch (e) {
-        console.error('Network error:', e);
+        console.error('Error de red:', e);
         setIsTyping(false);
         appendMessage(
           'bot',
-          `I'm having trouble connecting right now. Please call us directly at <strong>${SHOP.phoneFmt}</strong> and we'll sort you out! 📞`,
+          `Ahora mismo no puedo conectar. Llámanos al <strong>${SHOP.phoneFmt}</strong> y te atendemos al momento 📞`,
         );
         setBlocks((prev) => [
           ...prev,
-          { type: 'quickReplies', id: uid(), options: ['Call now ☎️', 'Try again 🔄'] },
+          { type: 'quickReplies', id: uid(), options: ['Llamar ahora ☎️', 'Reintentar 🔄'] },
         ]);
       } finally {
         setIsTyping(false);
@@ -510,7 +517,7 @@ export default function App() {
 
   const onServicePick = (listId, item) => {
     removeServiceList(listId);
-    sendMessage(`I'd like to book: ${item.name} (€${item.price})`);
+    sendMessage(`Me gustaría reservar: ${item.name} (€${item.price})`);
   };
 
   return (
@@ -519,17 +526,17 @@ export default function App() {
         <div className="avatar">✂️</div>
         <div className="header-info">
           <div className="shop-name">Barbería Cullera</div>
-          <div className="shop-sub">● Reception · Happy to help</div>
+          <div className="shop-sub">● Recepción · Encantados de ayudarte</div>
         </div>
         <div className="hdr-actions">
-          <a className="icon-btn" href="tel:617545837" title="Call us" aria-label="Call us">
+          <a className="icon-btn" href="tel:617545837" title="Llamar" aria-label="Llamar">
             📞
           </a>
           <button
             className="icon-btn"
             type="button"
-            title="Location"
-            aria-label="Location"
+            title="Ubicación"
+            aria-label="Ubicación"
             onClick={() =>
               window.open('https://maps.google.com/?q=Carrer+Ateneu+Musical+63a+Cullera+Valencia')
             }
@@ -565,7 +572,7 @@ export default function App() {
             const wrap = (
               <div className="bubble-wrap" key="wrap">
                 {bubbleInner}
-                {b.showLeadBadge ? <div className="lead-badge">✅ Booking saved</div> : null}
+                {b.showLeadBadge ? <div className="lead-badge">✅ Reserva guardada</div> : null}
                 <span className="bubble-time">{b.time}</span>
               </div>
             );
@@ -658,7 +665,7 @@ export default function App() {
                     <div className="success-icon" aria-hidden="true">
                       ✓
                     </div>
-                    <h3>Appointment Requested!</h3>
+                    <h3>¡Solicitud enviada!</h3>
                     <div className="success-summary">
                       <strong>{b.name}</strong>
                       <br />
@@ -667,10 +674,10 @@ export default function App() {
                       {b.preferredDate || '—'} · {b.preferredTime || '—'}
                     </div>
                     <div className="success-note">
-                      We&apos;ll confirm by phone at{' '}
+                      Te confirmamos por teléfono al{' '}
                       <a href={`tel:${SHOP.phone}`}>{SHOP.phoneFmt}</a>.
                     </div>
-                    <div className="lead-badge">✅ Booking saved</div>
+                    <div className="lead-badge">✅ Reserva guardada</div>
                   </div>
                   <span className="bubble-time">{b.time}</span>
                 </div>
@@ -698,7 +705,8 @@ export default function App() {
             ref={inputRef}
             className="user-input"
             rows={1}
-            placeholder="Type a message…"
+            placeholder="Escribe un mensaje…"
+            lang="es"
             autoComplete="off"
             autoCorrect="on"
             spellCheck
@@ -716,7 +724,7 @@ export default function App() {
         <button
           className="send-btn"
           type="button"
-          aria-label="Send message"
+          aria-label="Enviar mensaje"
           disabled={sendDisabled}
           onClick={() => sendMessage(inputValue)}
         >

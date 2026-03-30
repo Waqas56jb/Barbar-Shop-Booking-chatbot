@@ -1,4 +1,4 @@
-import { BOOKING_TRIGGER } from './shop';
+import { BOOKING_TRIGGER, BOOKING_USER_MESSAGE } from './shop';
 
 /** Production API (deployed backend). Override with ?api= or VITE_API_BASE in .env.production. */
 const DEFAULT_PRODUCTION_API_ORIGIN = 'https://barbar-shop-booking-chatbot-tspg.vercel.app';
@@ -38,7 +38,7 @@ export function clientDeviceHint() {
 }
 
 export function nowTime() {
-  return new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  return new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 }
 
 export function stripBookingTrigger(text, trigger = BOOKING_TRIGGER) {
@@ -74,15 +74,19 @@ export function normalizeBookingIntent(raw) {
     .replace(/\s+/g, ' ')
     .trim();
 
-  if (/book online|book now|\breserve\b/.test(t)) {
-    return "I'd like to book an appointment";
+  if (
+    /reservar cita|pedir cita|sacar cita|agendar|reserva online|reservar ahora|\bcita\b.*\b(reserva|pedir)/.test(
+      t,
+    )
+  ) {
+    return BOOKING_USER_MESSAGE;
   }
   if (
-    /^book an appointment$/.test(stripped) ||
-    /^book appointment$/.test(stripped) ||
-    /^book a slot$/.test(stripped)
+    /^me gustaría reservar una cita$/.test(stripped) ||
+    /^quiero reservar una cita$/.test(stripped) ||
+    /^reservar cita$/.test(stripped)
   ) {
-    return "I'd like to book an appointment";
+    return BOOKING_USER_MESSAGE;
   }
   return trimmed;
 }
