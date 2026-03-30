@@ -1,11 +1,13 @@
 {
   "name": "barberbot",
   "version": "2.0.0",
-  "description": "BarberBot — AI chatbot for Barbería Cullera",
+  "description": "BarberBot — API + config (Barbería Cullera)",
+  "private": true,
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "node --watch server.js",
+    "dev:nodemon": "nodemon server.js"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4",

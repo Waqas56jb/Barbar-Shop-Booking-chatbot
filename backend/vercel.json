@@ -7,6 +7,6 @@
     { "src": "/api/(.*)", "dest": "/server.js" },
     { "src": "/admin", "dest": "/server.js" },
     { "src": "/admin/(.*)", "dest": "/server.js" },
-    { "src": "/(.*)", "dest": "/public/$1" }
+    { "src": "/(.*)", "dest": "/server.js" }
   ]
 }

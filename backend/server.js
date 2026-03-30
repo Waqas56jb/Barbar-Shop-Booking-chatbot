@@ -16,7 +16,9 @@
  * ╚══════════════════════════════════════════════════════════════════╝
  */
 
-require('dotenv').config();
+const path         = require('path');
+const rootDir      = path.join(__dirname, '..');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const express      = require('express');
 const cors         = require('cors');
@@ -24,7 +26,6 @@ const crypto       = require('crypto');
 const bcrypt       = require('bcryptjs');
 const jwt          = require('jsonwebtoken');
 const OpenAI       = require('openai');
-const path         = require('path');
 const { neon }     = require('@neondatabase/serverless');
 const { v4: uuidv4 } = require('uuid');
 
@@ -1363,8 +1364,8 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
-app.use('/admin', express.static(path.join(__dirname, 'admin-panel')));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use('/admin', express.static(path.join(rootDir, 'admin')));
+app.use(express.static(path.join(rootDir, 'user')));
 
 app.use((_req, res) => {
   res.status(404).json({ error: 'Route not found.' });
