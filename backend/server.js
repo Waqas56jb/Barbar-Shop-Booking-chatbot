@@ -1366,17 +1366,7 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
-{
-  const adminRootDir = path.join(rootDir, 'admin');
-  const adminDistDir = path.join(adminRootDir, 'dist');
-  const adminStaticDir = fs.existsSync(path.join(adminDistDir, 'index.html'))
-    ? adminDistDir
-    : adminRootDir;
-  app.use('/admin', express.static(adminStaticDir));
-  if (adminStaticDir === adminRootDir) {
-    console.warn('⚠️  admin/dist not found — run `npm run build` in /admin (or use Vite dev on :5174) for the React admin UI.\n');
-  }
-}
+app.use('/admin', express.static(path.join(rootDir, 'admin')));
 const userAppRootDir = path.join(rootDir, 'user');
 const userAppDistDir = path.join(userAppRootDir, 'dist');
 const userAppStaticDir = fs.existsSync(path.join(userAppDistDir, 'index.html'))
