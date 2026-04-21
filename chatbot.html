@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>Barbería Cullera — Chat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+/* ── Tokens ── */
+:root{
+  --bg:       #0a0a0a;
+  --surface:  #111111;
+  --card:     #181818;
+  --border:   #272727;
+  --gold:     #c9a84c;
+  --gold2:    #e0c06a;
+  --text:     #ede8df;
+  --text2:    #a09a8e;
+  --text3:    #585248;
+  --bot-bg:   #1d1d1d;
+  --user-bg:  #c9a84c;
+  --user-txt: #0a0a0a;
+  --radius:   18px;
+  --radius-sm:10px;
+  --font-body:"DM Sans",system-ui,sans-serif;
+  --font-serif:"Cormorant Garamond",Georgia,serif;
+  --header-h: 64px;
+  --input-h:  64px;
+  --safe-bot: env(safe-area-inset-bottom,0px);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+html,body{
+  height:100%;
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-body);
+  font-size:15px;
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+}
+
+/* ── Shell ── */
+.chat-shell{
+  display:flex;
+  flex-direction:column;
+  height:100dvh;
+  max-width:480px;
+  margin:0 auto;
+  background:var(--surface);
+  border-left:1px solid var(--border);
+  border-right:1px solid var(--border);
+  position:relative;
+}
+
+/* ── Header ── */
+.chat-header{
+  height:var(--header-h);
+  min-height:var(--header-h);
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:0 18px;
+  background:var(--card);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+  position:relative;
+  z-index:10;
+}
+.header-avatar{
+  width:40px;height:40px;
+  border-radius:50%;
+  background:linear-gradient(135deg,var(--gold),#7a5a18);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;
+  flex-shrink:0;
+  box-shadow:0 0 0 2px #0a0a0a,0 0 0 4px var(--gold);
+}
+.header-info{flex:1;min-width:0}
+.header-name{
+  font-family:var(--font-serif);
+  font-size:1.05rem;
+  font-weight:700;
+  color:var(--text);
+  letter-spacing:.01em;
+  line-height:1.2;
+}
+.header-status{
+  display:flex;align-items:center;gap:5px;
+  font-size:.72rem;
+  color:var(--text2);
+  margin-top:2px;
+}
+.status-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:#3fb950;
+  box-shadow:0 0 6px rgba(63,185,80,.6);
+  animation:pulse 2.2s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+
+.header-phone{
+  display:flex;align-items:center;justify-content:center;
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(201,168,76,.12);
+  border:1px solid rgba(201,168,76,.25);
+  color:var(--gold);
+  font-size:16px;
+  text-decoration:none;
+  transition:background .2s;
+  flex-shrink:0;
+}
+.header-phone:hover{background:rgba(201,168,76,.22)}
+
+/* ── Messages area ── */
+.chat-messages{
+  flex:1;
+  overflow-y:auto;
+  padding:20px 14px 12px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  scroll-behavior:smooth;
+  -webkit-overflow-scrolling:touch;
+}
+.chat-messages::-webkit-scrollbar{width:3px}
+.chat-messages::-webkit-scrollbar-track{background:transparent}
+.chat-messages::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* ── Bubble row ── */
+.msg-row{
+  display:flex;
+  align-items:flex-end;
+  gap:8px;
+  max-width:100%;
+}
+.msg-row.bot{align-self:flex-start}
+.msg-row.user{align-self:flex-end;flex-direction:row-reverse}
+
+.bot-avatar{
+  width:28px;height:28px;border-radius:50%;
+  background:linear-gradient(135deg,var(--gold),#7a5a18);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;
+  flex-shrink:0;
+  margin-bottom:2px;
+}
+
+/* ── Bubble ── */
+.bubble{
+  max-width:82%;
+  padding:10px 14px;
+  border-radius:var(--radius);
+  font-size:.9rem;
+  line-height:1.5;
+  word-break:break-word;
+  animation:fadeUp .22s ease both;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.bot .bubble{
+  background:var(--bot-bg);
+  color:var(--text);
+  border-bottom-left-radius:5px;
+  border:1px solid var(--border);
+}
+.user .bubble{
+  background:var(--user-bg);
+  color:var(--user-txt);
+  border-bottom-right-radius:5px;
+  font-weight:500;
+}
+
+/* price list inside bubble */
+.price-list{
+  list-style:none;
+  margin-top:8px;
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+.price-list li{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:6px 10px;
+  background:rgba(255,255,255,.04);
+  border-radius:8px;
+  border:1px solid var(--border);
+  font-size:.82rem;
+}
+.price-list .svc-name{color:var(--text)}
+.price-list .svc-price{
+  color:var(--gold);
+  font-weight:600;
+  font-size:.8rem;
+  white-space:nowrap;
+}
+
+/* ── Timestamp ── */
+.ts{
+  font-size:.65rem;
+  color:var(--text3);
+  margin-top:1px;
+  padding:0 2px;
+  animation:fadeUp .25s ease both;
+}
+.msg-row.user .ts{text-align:right}
+
+/* ── Typing indicator ── */
+.typing-row{display:flex;align-items:flex-end;gap:8px;animation:fadeUp .2s ease both}
+.typing-bubble{
+  background:var(--bot-bg);
+  border:1px solid var(--border);
+  border-bottom-left-radius:5px;
+  border-radius:var(--radius);
+  padding:12px 16px;
+  display:flex;gap:4px;align-items:center;
+}
+.typing-bubble span{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--text3);
+  animation:blink 1.2s infinite;
+}
+.typing-bubble span:nth-child(2){animation-delay:.2s}
+.typing-bubble span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+
+/* ── Action buttons area ── */
+.actions-wrap{
+  padding:8px 14px 12px;
+  flex-shrink:0;
+}
+
+/* Main menu buttons (2×2 grid) */
+.menu-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+.menu-btn{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  color:var(--text);
+  font-family:var(--font-body);
+  font-size:.82rem;
+  font-weight:500;
+  padding:12px 10px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  transition:background .18s,border-color .18s,transform .12s;
+  touch-action:manipulation;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  min-height:52px;
+}
+.menu-btn:hover{
+  background:rgba(201,168,76,.1);
+  border-color:rgba(201,168,76,.4);
+}
+.menu-btn:active{transform:scale(.97)}
+.menu-btn .btn-icon{font-size:1.1rem}
+
+/* Inline reply buttons (row) */
+.reply-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin-top:4px;
+  animation:fadeUp .22s ease both;
+}
+.reply-btn{
+  background:transparent;
+  border:1px solid rgba(201,168,76,.35);
+  border-radius:24px;
+  color:var(--gold2);
+  font-family:var(--font-body);
+  font-size:.8rem;
+  font-weight:500;
+  padding:7px 14px;
+  cursor:pointer;
+  transition:background .18s,border-color .18s,transform .12s;
+  touch-action:manipulation;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.reply-btn:hover{
+  background:rgba(201,168,76,.12);
+  border-color:var(--gold);
+}
+.reply-btn:active{transform:scale(.97)}
+
+/* Primary CTA booking button */
+.book-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  background:var(--gold);
+  color:#0a0a0a;
+  font-family:var(--font-body);
+  font-size:.85rem;
+  font-weight:700;
+  padding:12px 22px;
+  border:none;
+  border-radius:28px;
+  cursor:pointer;
+  text-decoration:none;
+  transition:filter .18s,transform .12s;
+  touch-action:manipulation;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  margin-top:10px;
+  box-shadow:0 4px 20px rgba(201,168,76,.3);
+}
+.book-btn:hover{filter:brightness(1.1)}
+.book-btn:active{transform:scale(.97)}
+
+/* Back button */
+.back-btn{
+  background:transparent;
+  border:1px solid var(--border);
+  border-radius:24px;
+  color:var(--text2);
+  font-family:var(--font-body);
+  font-size:.77rem;
+  padding:6px 14px;
+  cursor:pointer;
+  margin-top:8px;
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  transition:border-color .18s,color .18s;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+.back-btn:hover{border-color:var(--text2);color:var(--text)}
+
+/* ── Divider ── */
+.date-divider{
+  display:flex;align-items:center;gap:8px;
+  color:var(--text3);font-size:.68rem;
+  padding:4px 0 8px;
+  flex-shrink:0;
+  align-self:stretch;
+}
+.date-divider::before,.date-divider::after{
+  content:'';flex:1;height:1px;background:var(--border);
+}
+
+/* ── Footer ── */
+.chat-footer{
+  padding:10px 14px max(calc(var(--safe-bot) + 10px),14px);
+  border-top:1px solid var(--border);
+  background:var(--card);
+  flex-shrink:0;
+  text-align:center;
+}
+.footer-text{
+  font-size:.68rem;
+  color:var(--text3);
+  letter-spacing:.02em;
+}
+.footer-text a{color:var(--text3);text-decoration:none}
+.footer-text a:hover{color:var(--text2)}
+
+/* ── Responsive ── */
+@media(min-width:481px){
+  .chat-shell{
+    box-shadow:0 20px 80px rgba(0,0,0,.6);
+    border-radius:24px;
+    margin:20px auto;
+    height:calc(100dvh - 40px);
+    max-height:820px;
+  }
+  html,body{overflow:auto;background:#050505}
+}
+@media(max-width:360px){
+  .menu-grid{grid-template-columns:1fr}
+  .bubble{font-size:.85rem}
+}
+</style>
+</head>
+<body>
+
+<div class="chat-shell" id="chatShell">
+
+  <!-- Header -->
+  <div class="chat-header">
+    <div class="header-avatar">✂️</div>
+    <div class="header-info">
+      <div class="header-name">Barbería Cullera</div>
+      <div class="header-status">
+        <div class="status-dot"></div>
+        <span>En línea ahora</span>
+      </div>
+    </div>
+    <a class="header-phone" href="tel:617545837" title="Llamar al 617 54 58 37">📞</a>
+  </div>
+
+  <!-- Messages -->
+  <div class="chat-messages" id="chatMessages">
+    <div class="date-divider">Hoy</div>
+  </div>
+
+  <!-- Action buttons -->
+  <div class="actions-wrap" id="actionsWrap">
+    <!-- filled by JS -->
+  </div>
+
+  <!-- Footer -->
+  <div class="chat-footer">
+    <div class="footer-text">
+      Barbería Cullera · Carrer Ateneu Musical, 63a, Cullera · <a href="tel:617545837">617 54 58 37</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ════════════════════════════════
+   CONFIG
+════════════════════════════════ */
+const BOOKING_URL = 'https://cut.yeasyapp.com/PjiP85';
+
+const PRICES = [
+  { name: 'Corte de pelo',    price: '16€' },
+  { name: 'Arreglo de barba', price: '11€' },
+  { name: 'Corte + barba',    price: '21€' },
+  { name: 'Degradado',        price: '14€' },
+  { name: 'Corte + diseño',   price: '18€' },
+  { name: 'Mechas',           price: '40€' },
+  { name: 'Color completo',   price: '60€' },
+];
+
+const MAIN_BUTTONS = [
+  { icon: '✂️', label: 'Corte',    key: 'corte' },
+  { icon: '🧔', label: 'Barba',    key: 'barba' },
+  { icon: '💰', label: 'Precios',  key: 'precios' },
+  { icon: '📅', label: 'Reservar', key: 'reservar' },
+];
+
+const RESPONSES = {
+  corte: {
+    userText: '✂️ Corte',
+    botHtml:  'Ofrecemos cortes modernos y clásicos para todo tipo de cabello: degradados, cortes a tijera, diseños personalizados… Nuestros barberos te ayudarán a encontrar el estilo que mejor te queda. ✂️',
+  },
+  barba: {
+    userText: '🧔 Barba',
+    botHtml:  'Arreglamos y perfilamos tu barba con estilo profesional: afeitado con vapor, diseño, relleno de huecos… Sal de la silla sintiéndote como nuevo. 💈',
+  },
+  precios: {
+    userText: '💰 Precios',
+    botHtml:  'Aquí tienes todos nuestros precios:',
+    priceList: true,
+  },
+  reservar: {
+    userText: '📅 Reservar',
+    botHtml:  '¡Reserva tu cita ahora mismo! Solo te tomará un minuto. 📅',
+  },
+};
+
+/* ════════════════════════════════
+   HELPERS
+════════════════════════════════ */
+function nowTime() {
+  return new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+}
+
+function scrollBottom() {
+  const el = document.getElementById('chatMessages');
+  if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+}
+
+function clearActions() {
+  document.getElementById('actionsWrap').innerHTML = '';
+}
+
+/* ── Append a row ── */
+function appendRow(role, contentHtml, ts) {
+  const msgs = document.getElementById('chatMessages');
+
+  if (role === 'bot') {
+    const row = document.createElement('div');
+    row.className = 'msg-row bot';
+    row.innerHTML = `
+      <div class="bot-avatar">✂️</div>
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <div class="bubble">${contentHtml}</div>
+        <span class="ts">${ts}</span>
+      </div>`;
+    msgs.appendChild(row);
+  } else {
+    const row = document.createElement('div');
+    row.className = 'msg-row user';
+    row.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+        <div class="bubble">${contentHtml}</div>
+        <span class="ts">${ts}</span>
+      </div>`;
+    msgs.appendChild(row);
+  }
+  scrollBottom();
+}
+
+/* ── Typing bubble ── */
+function showTyping() {
+  const msgs = document.getElementById('chatMessages');
+  const el = document.createElement('div');
+  el.className = 'typing-row';
+  el.id = 'typingIndicator';
+  el.innerHTML = `
+    <div class="bot-avatar">✂️</div>
+    <div class="typing-bubble">
+      <span></span><span></span><span></span>
+    </div>`;
+  msgs.appendChild(el);
+  scrollBottom();
+}
+
+function hideTyping() {
+  const el = document.getElementById('typingIndicator');
+  if (el) el.remove();
+}
+
+/* ── Build price list HTML ── */
+function buildPriceListHtml() {
+  const items = PRICES.map(p =>
+    `<li><span class="svc-name">${p.name}</span><span class="svc-price">${p.price}</span></li>`
+  ).join('');
+  return `<ul class="price-list">${items}</ul>`;
+}
+
+/* ── Show post-response buttons ── */
+function showResponseActions() {
+  const wrap = document.getElementById('actionsWrap');
+  wrap.innerHTML = '';
+
+  const row = document.createElement('div');
+  row.className = 'reply-row';
+
+  const bookBtn = document.createElement('a');
+  bookBtn.className = 'book-btn';
+  bookBtn.href = BOOKING_URL;
+  bookBtn.target = '_blank';
+  bookBtn.rel = 'noopener noreferrer';
+  bookBtn.innerHTML = '📅 Reservar ahora';
+
+  const backBtn = document.createElement('button');
+  backBtn.className = 'back-btn';
+  backBtn.innerHTML = '← Volver al inicio';
+  backBtn.addEventListener('click', showMainMenu);
+
+  row.appendChild(bookBtn);
+  row.appendChild(backBtn);
+  wrap.appendChild(row);
+}
+
+/* ── Show main menu ── */
+function showMainMenu() {
+  const wrap = document.getElementById('actionsWrap');
+  wrap.innerHTML = '';
+
+  const grid = document.createElement('div');
+  grid.className = 'menu-grid';
+
+  MAIN_BUTTONS.forEach(btn => {
+    const el = document.createElement('button');
+    el.className = 'menu-btn';
+    el.innerHTML = `<span class="btn-icon">${btn.icon}</span><span>${btn.label}</span>`;
+    el.addEventListener('click', () => handleMenu(btn.key, btn.icon + ' ' + btn.label));
+    grid.appendChild(el);
+  });
+
+  wrap.appendChild(grid);
+}
+
+/* ── Handle menu tap ── */
+function handleMenu(key, userLabel) {
+  clearActions();
+
+  const ts = nowTime();
+  const resp = RESPONSES[key];
+
+  /* User bubble */
+  appendRow('user', userLabel, ts);
+
+  /* Typing delay */
+  setTimeout(() => {
+    showTyping();
+    setTimeout(() => {
+      hideTyping();
+      const ts2 = nowTime();
+
+      if (key === 'reservar') {
+        /* Direct redirect for Reservar */
+        appendRow('bot', resp.botHtml, ts2);
+        window.open(BOOKING_URL, '_blank', 'noopener,noreferrer');
+        showResponseActions();
+      } else if (resp.priceList) {
+        appendRow('bot', resp.botHtml + buildPriceListHtml(), ts2);
+        showResponseActions();
+      } else {
+        appendRow('bot', resp.botHtml, ts2);
+        showResponseActions();
+      }
+    }, 900);
+  }, 300);
+}
+
+/* ════════════════════════════════
+   BOOT
+════════════════════════════════ */
+(function init() {
+  const ts = nowTime();
+
+  /* Welcome message with delay */
+  setTimeout(() => {
+    showTyping();
+    setTimeout(() => {
+      hideTyping();
+      appendRow('bot',
+        '¡Hola! 👋 Bienvenido a <strong>Barbería Cullera</strong>. Estoy aquí para ayudarte. ¿En qué te puedo ayudar hoy? ✂️',
+        nowTime()
+      );
+      showMainMenu();
+    }, 1000);
+  }, 500);
+})();
+</script>
+
+</body>
+</html>

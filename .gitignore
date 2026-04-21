@@ -25,3 +25,6 @@ Thumbs.db
 
 # Misc
 *.log
+
+# Large zip archives
+*.zip
