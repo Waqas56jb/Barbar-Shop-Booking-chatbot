@@ -1,9 +1,11 @@
 {
   "version": 2,
   "builds": [
-    { "src": "chatbot.html", "use": "@vercel/static" }
+    { "src": "chatbot.html", "use": "@vercel/static" },
+    { "src": "logo.png",     "use": "@vercel/static" }
   ],
   "routes": [
-    { "src": "/(.*)", "dest": "/chatbot.html" }
+    { "src": "/logo.png",  "dest": "/logo.png"     },
+    { "src": "/(.*)",      "dest": "/chatbot.html" }
   ]
 }
