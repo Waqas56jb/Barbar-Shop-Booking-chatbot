@@ -158,18 +158,24 @@ html,body{
 
 /* ── Price table inside bubble ─────────────── */
 .price-list{
-  list-style:none;margin-top:10px;
+  list-style:none;margin-top:6px;
   display:flex;flex-direction:column;gap:5px;
 }
 .price-list li{
   display:flex;justify-content:space-between;align-items:center;
-  padding:7px 11px;
+  padding:7px 11px;gap:6px;
   background:rgba(255,255,255,.04);
   border:1px solid var(--border);
   border-radius:10px;font-size:.8rem;
 }
-.sn{color:var(--text)}
-.sp{color:var(--gold);font-weight:600;white-space:nowrap;margin-left:10px}
+.sn{color:var(--text);flex:1;min-width:0}
+.st{color:var(--text2);font-size:.72rem;white-space:nowrap;flex-shrink:0}
+.sp{color:var(--gold);font-weight:600;white-space:nowrap;flex-shrink:0}
+.price-section-hd{
+  color:var(--text2);font-size:.66rem;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;
+  margin:13px 0 5px;padding-left:3px;
+}
 
 /* ── Typing indicator ───────────────────────── */
 .typing-row{
@@ -299,7 +305,11 @@ html,body{
 
   <!-- Header -->
   <div class="header">
-    <div class="h-avatar">✂️</div>
+    <div class="h-avatar" style="padding:0;overflow:hidden;background:none;">
+      <img src="admin/logo.png" alt="Cullera Barbershop"
+        style="width:100%;height:100%;object-fit:cover;border-radius:50%;"
+        onerror="this.style.display='none';this.parentElement.style.background='linear-gradient(145deg,#c9a84c 0%,#7a5418 100%)';this.parentElement.style.fontSize='20px';this.parentElement.textContent='✂️'">
+    </div>
     <div class="h-info">
       <div class="h-name">Cullera Barbershop</div>
       <div class="h-status"><div class="dot"></div><span>En línea ahora</span></div>
@@ -328,40 +338,81 @@ html,body{
 ══════════════════════════════════════════ */
 const BOOK_URL = 'https://cut.yeasyapp.com/PjiP85';
 
-const PRICES = [
-  ['✂️ Corte de pelo',      '16€'],
-  ['🧔 Arreglo de barba',   '11€'],
-  ['✂️🧔 Corte + barba',    '21€'],
-  ['💈 Degradado',          '14€'],
-  ['🎨 Corte + diseño',     '18€'],
-  ['🌟 Mechas',             '40€'],
-  ['🎨 Color completo',     '60€'],
+/* Top 3 main services shown first */
+const MAIN_SERVICES = [
+  { name:'✂️ Corte',                              time:'30 min', price:'18.90€' },
+  { name:'✂️🧔 Corte + barba simple',             time:'45 min', price:'24.90€' },
+  { name:'✂️🧔 Corte + barba ritual + ozono',     time:'60 min', price:'29.00€' },
 ];
 
+/* Full catalogue by category */
+const ALL_SERVICES = {
+  barba: [
+    { name:'🧔 Barba simple',                     time:'15 min', price:'12.80€' },
+    { name:'🧔 Barba con ritual + limpieza',       time:'30 min', price:'15.80€' },
+  ],
+  corte: [
+    { name:'✂️ Degradado de laterales',           time:'15 min', price:'14.60€' },
+    { name:'✂️ Rapado completo',                  time:'15 min', price:'15.80€' },
+    { name:'✂️ Afeitado clásico de cabeza',       time:'15 min', price:'16.80€' },
+  ],
+  combinados: [
+    { name:'Degradado laterales + barba simple',  time:'30 min', price:'22.90€' },
+    { name:'Rapado completo + barba simple',       time:'30 min', price:'22.90€' },
+    { name:'Afeitado cabeza + barba simple',       time:'30 min', price:'23.90€' },
+    { name:'Degradado + barba ritual + ozono',     time:'30 min', price:'25.90€' },
+    { name:'Rapado + barba ritual + limpieza',     time:'45 min', price:'25.90€' },
+    { name:'Afeitado + barba tradicional + ozono', time:'45 min', price:'26.90€' },
+  ],
+  tratamientos: [
+    { name:'💆 Tratamiento barba (canas)',         time:'20 min', price:'15.00€' },
+    { name:'💆 Limpieza facial básica',            time:'15 min', price: '5.00€' },
+    { name:'💆 Limpieza facial completa',          time:'25 min', price:'20.00€' },
+    { name:'💆 Lavado intenso',                    time:'15 min', price: '8.00€' },
+    { name:'💆 Calmar y equilibrar',               time:'15 min', price: '8.00€' },
+    { name:'🔍 Análisis capilar',                  time:'15 min', price:'10.00€' },
+  ],
+  color: [
+    { name:'🎨 Mechas',                            time:'120 min', price:'30.00€' },
+    { name:'🎨 Color total',                       time:'180 min', price:'60.00€' },
+    { name:'🌀 Permanente rizada',                 time:' 60 min', price:'40.00€' },
+  ],
+};
+
 const MENU = [
-  { icon:'✂️', label:'Corte',         key:'corte'   },
-  { icon:'🧔', label:'Barba',         key:'barba'   },
-  { icon:'💰', label:'Precios',       key:'precios' },
-  { icon:'📅', label:'Reservar cita', key:'reservar'},
+  { icon:'✂️', label:'Servicios',         key:'servicios' },
+  { icon:'💰', label:'Todos los precios', key:'precios'   },
+  { icon:'🕐', label:'Horario',           key:'horario'   },
+  { icon:'📲', label:'Reservar cita',     key:'reservar'  },
 ];
 
 const RESPONSES = {
-  corte: {
-    user: '✂️ Corte',
-    bot:  'Ofrecemos cortes modernos y clásicos para todo tipo de cabello. Nuestros barberos profesionales te darán el estilo que buscas. 💈\n\nPara ver disponibilidad y reservar tu cita, visita nuestro sistema de reservas 👇',
-  },
-  barba: {
-    user: '🧔 Barba',
-    bot:  'Arreglamos, perfilamos y cuidamos tu barba con técnica profesional. Desde arreglos simples hasta estilos completos. 🧔\n\nPara reservar tu cita con nuestros expertos 👇',
+  servicios: {
+    user: '✂️ Servicios',
+    bot:  'Nuestros servicios más populares 💈',
+    prices: 'main',
   },
   precios: {
-    user: '💰 Precios',
-    bot:  'Estos son nuestros precios actuales: 💈',
-    prices: true,
+    user: '💰 Todos los precios',
+    bot:  'Lista completa de servicios y precios:',
+    prices: 'all',
+  },
+  horario: {
+    user: '🕐 Horario',
+    bot:  '🕐 <strong>Horario de apertura:</strong><br><br>' +
+          'Lunes: <em>Cerrado</em><br>' +
+          'Martes: 09:00 – 21:00<br>' +
+          'Miércoles: 09:00 – 21:00<br>' +
+          'Jueves: 09:00 – 20:00<br>' +
+          'Viernes: 08:00 – 20:00<br>' +
+          'Sábado: 08:00 – 15:00<br>' +
+          'Domingo: <em>Cerrado</em><br><br>' +
+          '⚠️ <strong>Cancelaciones:</strong> mínimo 6 horas antes.<br>' +
+          'No asistencia: se cobra el 100% del servicio.',
   },
   reservar: {
-    user: '📅 Reservar cita',
-    bot:  '¡Perfecto! Para reservar tu cita en Cullera Barbershop, haz clic en el botón de abajo y elige tu día y hora favoritos. ✅\n\n¡Te esperamos! 💈',
+    user: '📲 Reservar cita',
+    bot:  '¡Perfecto! Elige tu día y hora favoritos haciendo clic abajo. ✅<br><br>¡Te esperamos! 💈',
   },
 };
 
@@ -418,12 +469,27 @@ function hideTyping(){
   if(el) el.remove();
 }
 
-/* build price list html */
-function priceHtml(){
-  const items = PRICES.map(([n,p])=>
-    `<li><span class="sn">${n}</span><span class="sp">${p}</span></li>`
+/* build a single service row */
+function svcRow(s){
+  return `<li><span class="sn">${s.name}</span><span class="st">${s.time}</span><span class="sp">${s.price}</span></li>`;
+}
+
+/* build price list html — type: 'main' | 'all' */
+function priceHtml(type){
+  if(type==='main'){
+    return `<ul class="price-list">${MAIN_SERVICES.map(svcRow).join('')}</ul>`;
+  }
+  const cats = [
+    { title:'✂️ SERVICIOS PRINCIPALES', items: MAIN_SERVICES },
+    { title:'🧔 BARBA',                 items: ALL_SERVICES.barba },
+    { title:'✂️ CORTE / CABELLO',       items: ALL_SERVICES.corte },
+    { title:'💈 COMBINADOS',            items: ALL_SERVICES.combinados },
+    { title:'💆 TRATAMIENTOS',          items: ALL_SERVICES.tratamientos },
+    { title:'🎨 COLOR Y ESTILO',        items: ALL_SERVICES.color },
+  ];
+  return cats.map(c=>
+    `<div class="price-section-hd">${c.title}</div><ul class="price-list">${c.items.map(svcRow).join('')}</ul>`
   ).join('');
-  return `<ul class="price-list">${items}</ul>`;
 }
 
 /* clear actions panel */
@@ -486,8 +552,8 @@ function handleTap(key){
     setTimeout(()=>{
       hideTyping();
       const html = r.prices
-        ? esc(r.bot) + priceHtml()
-        : esc(r.bot);
+        ? esc(r.bot) + priceHtml(r.prices)
+        : r.bot;
       addRow('bot', html);
       showRespBtns();
     }, 950);
