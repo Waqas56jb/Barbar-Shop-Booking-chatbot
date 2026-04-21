@@ -68,11 +68,21 @@ html,body{
   z-index:5;
 }
 .h-avatar{
-  width:42px;height:42px;border-radius:50%;
-  background:linear-gradient(145deg,#c9a84c 0%,#7a5418 100%);
+  height:46px;
+  width:auto;
+  max-width:140px;
+  border-radius:8px;
+  overflow:hidden;
+  flex-shrink:0;
   display:flex;align-items:center;justify-content:center;
-  font-size:20px;flex-shrink:0;
-  box-shadow:0 0 0 2px var(--bg),0 0 0 4px rgba(201,168,76,.5);
+  background:#111;
+}
+.h-avatar img{
+  height:100%;
+  width:auto;
+  max-width:140px;
+  object-fit:contain;
+  display:block;
 }
 .h-info{flex:1;min-width:0}
 .h-name{
@@ -270,6 +280,42 @@ html,body{
 }
 .back-btn:hover{border-color:var(--text2);color:var(--text)}
 
+/* ── Input bar ──────────────────────────────── */
+.input-bar{
+  display:flex;align-items:center;gap:9px;
+  padding:10px 14px;
+  background:var(--card);
+  border-top:1px solid var(--border);
+  flex-shrink:0;
+}
+.input-field{
+  flex:1;
+  background:var(--card2);
+  border:1px solid var(--border);
+  border-radius:22px;
+  color:var(--text);
+  font-family:var(--font);
+  font-size:.875rem;
+  padding:10px 16px;
+  outline:none;
+  transition:border-color .18s;
+  min-width:0;
+}
+.input-field::placeholder{color:var(--text3)}
+.input-field:focus{border-color:rgba(201,168,76,.55)}
+.send-btn{
+  width:40px;height:40px;border-radius:50%;
+  background:var(--gold);border:none;
+  color:#0a0a0a;font-size:17px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;flex-shrink:0;
+  transition:filter .16s,transform .1s;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+.send-btn:hover{filter:brightness(1.12)}
+.send-btn:active{transform:scale(.92)}
+
 /* ── Footer ────────────────────────────────── */
 .footer{
   text-align:center;
@@ -305,13 +351,11 @@ html,body{
 
   <!-- Header -->
   <div class="header">
-    <div class="h-avatar" style="padding:0;overflow:hidden;background:none;">
-      <img src="admin/logo.png" alt="Cullera Barbershop"
-        style="width:100%;height:100%;object-fit:cover;border-radius:50%;"
-        onerror="this.style.display='none';this.parentElement.style.background='linear-gradient(145deg,#c9a84c 0%,#7a5418 100%)';this.parentElement.style.fontSize='20px';this.parentElement.textContent='✂️'">
+    <div class="h-avatar">
+      <img src="logo.png" alt="Garris The Barberclub"
+        onerror="this.parentElement.innerHTML='<span style=\'font-size:22px\'>✂️</span>'">
     </div>
     <div class="h-info">
-      <div class="h-name">Cullera Barbershop</div>
       <div class="h-status"><div class="dot"></div><span>En línea ahora</span></div>
     </div>
     <a class="h-call" href="tel:617545837" title="Llamar">📞</a>
@@ -324,6 +368,16 @@ html,body{
 
   <!-- Actions -->
   <div class="actions" id="actions"></div>
+
+  <!-- Input bar -->
+  <div class="input-bar">
+    <input class="input-field" id="chatInput" type="text"
+      placeholder="Escribe tu mensaje…" autocomplete="off" maxlength="220"
+      enterkeyhint="send">
+    <button class="send-btn" id="sendBtn" aria-label="Enviar">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
 
   <!-- Footer -->
   <div class="footer">
@@ -474,11 +528,18 @@ function svcRow(s){
   return `<li><span class="sn">${s.name}</span><span class="st">${s.time}</span><span class="sp">${s.price}</span></li>`;
 }
 
-/* build price list html — type: 'main' | 'all' */
+/* build price list html — type: 'main' | 'all' | 'barba' | 'color' | 'tratamientos' */
 function priceHtml(type){
   if(type==='main'){
     return `<ul class="price-list">${MAIN_SERVICES.map(svcRow).join('')}</ul>`;
   }
+  /* single-category shortcuts */
+  const single = { barba:'🧔 BARBA', color:'🎨 COLOR Y ESTILO', tratamientos:'💆 TRATAMIENTOS' };
+  if(single[type]){
+    const items = ALL_SERVICES[type] || [];
+    return `<div class="price-section-hd">${single[type]}</div><ul class="price-list">${items.map(svcRow).join('')}</ul>`;
+  }
+  /* full catalogue */
   const cats = [
     { title:'✂️ SERVICIOS PRINCIPALES', items: MAIN_SERVICES },
     { title:'🧔 BARBA',                 items: ALL_SERVICES.barba },
@@ -559,6 +620,93 @@ function handleTap(key){
     }, 950);
   }, 280);
 }
+
+/* ══════════════════════════════════════════
+   FREE-TEXT KEYBOARD
+══════════════════════════════════════════ */
+
+/* Strip accents for easier matching */
+function norm(s){
+  return String(s||'').toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
+
+function botReply(raw){
+  const t = norm(raw);
+
+  if(/\b(hola|buenas|buenos|hey|hi|hello|good)\b/.test(t))
+    return { bot:'¡Hola! 👋 ¿En qué te puedo ayudar?\n\nPuedes preguntarme sobre nuestros <strong>servicios</strong>, <strong>precios</strong>, <strong>horario</strong> o cómo <strong>reservar tu cita</strong>. 💈' };
+
+  if(/\b(precio|precios|cuanto|cuesta|cuestan|coste|vale|valen|tarifa)\b/.test(t))
+    return { bot:'Nuestros servicios más populares 💈', prices:'main' };
+
+  if(/\b(todo|todos|completo|completa|lista|catalogo|mas servicios|ver todo)\b/.test(t))
+    return { bot:'Lista completa de servicios y precios:', prices:'all' };
+
+  if(/\b(corte|pelo|cabello|hair|cut)\b/.test(t))
+    return { bot:'Nuestros servicios de corte ✂️', prices:'main' };
+
+  if(/\b(barba|beard|afeitado|rasurado)\b/.test(t))
+    return { bot:'Servicios de barba disponibles 🧔',
+      prices:'barba' };
+
+  if(/\b(color|mecha|mechas|tinte|permanente|rizado)\b/.test(t))
+    return { bot:'Servicios de color y estilo 🎨', prices:'color' };
+
+  if(/\b(tratamiento|limpieza|facial|analisis|capilar|lavado|calmar)\b/.test(t))
+    return { bot:'Nuestros tratamientos 💆', prices:'tratamientos' };
+
+  if(/\b(horario|hora|horas|cuando|abierto|cerrado|abre|cierra|lunes|martes|miercoles|jueves|viernes|sabado|domingo)\b/.test(t))
+    return RESPONSES.horario;
+
+  if(/\b(reservar|reserva|cita|pedir|book|appointment)\b/.test(t))
+    return { ...RESPONSES.reservar, open:true };
+
+  if(/\b(donde|ubicacion|direccion|calle|address|location|sitio)\b/.test(t))
+    return { bot:'📍 Nos encontramos en:<br><br><strong>Carrer Ateneu Musical, 63a</strong><br>Cullera, Valencia<br><br>📞 <a href="tel:617545837" style="color:var(--gold)">617 54 58 37</a>' };
+
+  if(/\b(telefono|llamar|phone|contacto|contact|numero)\b/.test(t))
+    return { bot:'📞 Puedes llamarnos al <a href="tel:617545837" style="color:var(--gold)">617 54 58 37</a>' };
+
+  if(/\b(gracias|thanks|perfecto|genial|vale|bien|ok|excelente)\b/.test(t))
+    return { bot:'¡De nada! 😊 Si necesitas algo más, aquí estoy. ¿Quieres reservar tu cita? 💈' };
+
+  /* default */
+  return { bot:'No estoy seguro de entender tu pregunta 😅<br><br>Puedes preguntarme sobre:<br>• Servicios y precios<br>• Horario de apertura<br>• Cómo reservar tu cita<br><br>¿Qué necesitas? 👇' };
+}
+
+function handleFreeText(text){
+  const trimmed = text.trim();
+  if(!trimmed) return;
+  addRow('usr', esc(trimmed));
+
+  const r = botReply(trimmed);
+  if(r.open) window.open(BOOK_URL,'_blank','noopener,noreferrer');
+
+  setTimeout(()=>{
+    showTyping();
+    setTimeout(()=>{
+      hideTyping();
+      const html = r.prices ? r.bot + priceHtml(r.prices) : r.bot;
+      addRow('bot', html);
+      showRespBtns();
+    }, 950);
+  }, 280);
+}
+
+(function wireInput(){
+  const inp = document.getElementById('chatInput');
+  const btn = document.getElementById('sendBtn');
+  function send(){
+    const v = inp.value.trim();
+    if(!v) return;
+    inp.value='';
+    inp.focus();
+    handleFreeText(v);
+  }
+  btn.addEventListener('click', send);
+  inp.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ e.preventDefault(); send(); } });
+})();
 
 /* ══════════════════════════════════════════
    BOOT
