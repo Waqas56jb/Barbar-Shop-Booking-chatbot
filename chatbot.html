@@ -3,31 +3,31 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-<title>Barbería Cullera — Chat</title>
+<title>Cullera Barbershop — Chat</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
 <style>
-/* ── Tokens ── */
+/* ── Tokens ────────────────────────────────── */
 :root{
-  --bg:       #0a0a0a;
-  --surface:  #111111;
-  --card:     #181818;
-  --border:   #272727;
-  --gold:     #c9a84c;
-  --gold2:    #e0c06a;
-  --text:     #ede8df;
-  --text2:    #a09a8e;
-  --text3:    #585248;
-  --bot-bg:   #1d1d1d;
-  --user-bg:  #c9a84c;
-  --user-txt: #0a0a0a;
-  --radius:   18px;
-  --radius-sm:10px;
-  --font-body:"DM Sans",system-ui,sans-serif;
-  --font-serif:"Cormorant Garamond",Georgia,serif;
-  --header-h: 64px;
-  --input-h:  64px;
-  --safe-bot: env(safe-area-inset-bottom,0px);
+  --bg:        #080808;
+  --surface:   #101010;
+  --card:      #181818;
+  --card2:     #1e1e1e;
+  --border:    #282828;
+  --gold:      #c9a84c;
+  --gold2:     #dfc06a;
+  --gold-glow: rgba(201,168,76,.18);
+  --text:      #ede8df;
+  --text2:     #a09a8e;
+  --text3:     #555050;
+  --bot-bg:    #1c1c1c;
+  --user-bg:   #c9a84c;
+  --user-txt:  #0a0a0a;
+  --green:     #3fb950;
+  --radius:    20px;
+  --font:      "DM Sans",system-ui,sans-serif;
+  --serif:     "Cormorant Garamond",Georgia,serif;
+  --safe-b:    env(safe-area-inset-bottom,0px);
 }
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -36,14 +36,13 @@ html,body{
   height:100%;
   background:var(--bg);
   color:var(--text);
-  font-family:var(--font-body);
-  font-size:15px;
+  font-family:var(--font);
   -webkit-font-smoothing:antialiased;
   overflow:hidden;
 }
 
-/* ── Shell ── */
-.chat-shell{
+/* ── Shell ─────────────────────────────────── */
+.shell{
   display:flex;
   flex-direction:column;
   height:100dvh;
@@ -52,587 +51,467 @@ html,body{
   background:var(--surface);
   border-left:1px solid var(--border);
   border-right:1px solid var(--border);
-  position:relative;
 }
 
-/* ── Header ── */
-.chat-header{
-  height:var(--header-h);
-  min-height:var(--header-h);
+/* ── Header ────────────────────────────────── */
+.header{
   display:flex;
   align-items:center;
   gap:12px;
-  padding:0 18px;
+  padding:0 16px;
+  height:66px;
+  min-height:66px;
   background:var(--card);
   border-bottom:1px solid var(--border);
   flex-shrink:0;
   position:relative;
-  z-index:10;
+  z-index:5;
 }
-.header-avatar{
-  width:40px;height:40px;
-  border-radius:50%;
-  background:linear-gradient(135deg,var(--gold),#7a5a18);
+.h-avatar{
+  width:42px;height:42px;border-radius:50%;
+  background:linear-gradient(145deg,#c9a84c 0%,#7a5418 100%);
   display:flex;align-items:center;justify-content:center;
-  font-size:18px;
-  flex-shrink:0;
-  box-shadow:0 0 0 2px #0a0a0a,0 0 0 4px var(--gold);
+  font-size:20px;flex-shrink:0;
+  box-shadow:0 0 0 2px var(--bg),0 0 0 4px rgba(201,168,76,.5);
 }
-.header-info{flex:1;min-width:0}
-.header-name{
-  font-family:var(--font-serif);
-  font-size:1.05rem;
-  font-weight:700;
-  color:var(--text);
+.h-info{flex:1;min-width:0}
+.h-name{
+  font-family:var(--serif);
+  font-size:1.1rem;font-weight:700;
+  color:var(--text);line-height:1.2;
   letter-spacing:.01em;
-  line-height:1.2;
 }
-.header-status{
+.h-status{
   display:flex;align-items:center;gap:5px;
-  font-size:.72rem;
-  color:var(--text2);
-  margin-top:2px;
+  font-size:.7rem;color:var(--text2);margin-top:2px;
 }
-.status-dot{
+.dot{
   width:7px;height:7px;border-radius:50%;
-  background:#3fb950;
-  box-shadow:0 0 6px rgba(63,185,80,.6);
-  animation:pulse 2.2s ease-in-out infinite;
+  background:var(--green);
+  box-shadow:0 0 7px rgba(63,185,80,.7);
+  animation:pulse 2s ease-in-out infinite;
 }
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 
-.header-phone{
+.h-call{
+  width:38px;height:38px;border-radius:50%;
+  background:var(--gold-glow);
+  border:1px solid rgba(201,168,76,.3);
   display:flex;align-items:center;justify-content:center;
-  width:36px;height:36px;border-radius:50%;
-  background:rgba(201,168,76,.12);
-  border:1px solid rgba(201,168,76,.25);
-  color:var(--gold);
-  font-size:16px;
-  text-decoration:none;
-  transition:background .2s;
-  flex-shrink:0;
+  font-size:17px;text-decoration:none;
+  transition:background .18s;flex-shrink:0;
 }
-.header-phone:hover{background:rgba(201,168,76,.22)}
+.h-call:hover{background:rgba(201,168,76,.25)}
 
-/* ── Messages area ── */
-.chat-messages{
-  flex:1;
-  overflow-y:auto;
-  padding:20px 14px 12px;
-  display:flex;
-  flex-direction:column;
-  gap:6px;
+/* ── Messages ───────────────────────────────── */
+.msgs{
+  flex:1;overflow-y:auto;
+  padding:18px 14px 10px;
+  display:flex;flex-direction:column;gap:4px;
   scroll-behavior:smooth;
   -webkit-overflow-scrolling:touch;
 }
-.chat-messages::-webkit-scrollbar{width:3px}
-.chat-messages::-webkit-scrollbar-track{background:transparent}
-.chat-messages::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.msgs::-webkit-scrollbar{width:3px}
+.msgs::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 
-/* ── Bubble row ── */
-.msg-row{
-  display:flex;
-  align-items:flex-end;
-  gap:8px;
-  max-width:100%;
+/* ── Date label ────────────────────────────── */
+.date-sep{
+  display:flex;align-items:center;gap:8px;
+  color:var(--text3);font-size:.66rem;
+  padding:2px 0 10px;align-self:stretch;
 }
-.msg-row.bot{align-self:flex-start}
-.msg-row.user{align-self:flex-end;flex-direction:row-reverse}
+.date-sep::before,.date-sep::after{content:'';flex:1;height:1px;background:var(--border)}
 
-.bot-avatar{
-  width:28px;height:28px;border-radius:50%;
-  background:linear-gradient(135deg,var(--gold),#7a5a18);
+/* ── Row ────────────────────────────────────── */
+.row{display:flex;align-items:flex-end;gap:8px;animation:fadeUp .22s ease both}
+.row.bot{align-self:flex-start;max-width:88%}
+.row.usr{align-self:flex-end;flex-direction:row-reverse;max-width:72%}
+@keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+
+.av{
+  width:30px;height:30px;border-radius:50%;
+  background:linear-gradient(145deg,#c9a84c,#7a5418);
   display:flex;align-items:center;justify-content:center;
-  font-size:12px;
-  flex-shrink:0;
-  margin-bottom:2px;
+  font-size:13px;flex-shrink:0;margin-bottom:2px;
 }
 
-/* ── Bubble ── */
-.bubble{
-  max-width:82%;
-  padding:10px 14px;
+.bub{
+  padding:11px 15px;
   border-radius:var(--radius);
-  font-size:.9rem;
-  line-height:1.5;
+  font-size:.88rem;line-height:1.55;
   word-break:break-word;
-  animation:fadeUp .22s ease both;
 }
-@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-
-.bot .bubble{
+.row.bot .bub{
   background:var(--bot-bg);
   color:var(--text);
   border-bottom-left-radius:5px;
   border:1px solid var(--border);
 }
-.user .bubble{
+.row.usr .bub{
   background:var(--user-bg);
   color:var(--user-txt);
   border-bottom-right-radius:5px;
   font-weight:500;
 }
+.ts{font-size:.63rem;color:var(--text3);padding:0 2px;margin-top:1px}
+.row.usr .ts{text-align:right}
 
-/* price list inside bubble */
+/* ── Price table inside bubble ─────────────── */
 .price-list{
-  list-style:none;
-  margin-top:8px;
-  display:flex;
-  flex-direction:column;
-  gap:5px;
+  list-style:none;margin-top:10px;
+  display:flex;flex-direction:column;gap:5px;
 }
 .price-list li{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:6px 10px;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:7px 11px;
   background:rgba(255,255,255,.04);
-  border-radius:8px;
   border:1px solid var(--border);
-  font-size:.82rem;
+  border-radius:10px;font-size:.8rem;
 }
-.price-list .svc-name{color:var(--text)}
-.price-list .svc-price{
-  color:var(--gold);
-  font-weight:600;
-  font-size:.8rem;
-  white-space:nowrap;
-}
+.sn{color:var(--text)}
+.sp{color:var(--gold);font-weight:600;white-space:nowrap;margin-left:10px}
 
-/* ── Timestamp ── */
-.ts{
-  font-size:.65rem;
-  color:var(--text3);
-  margin-top:1px;
-  padding:0 2px;
-  animation:fadeUp .25s ease both;
+/* ── Typing indicator ───────────────────────── */
+.typing-row{
+  display:flex;align-items:flex-end;gap:8px;
+  animation:fadeUp .2s ease both;
 }
-.msg-row.user .ts{text-align:right}
-
-/* ── Typing indicator ── */
-.typing-row{display:flex;align-items:flex-end;gap:8px;animation:fadeUp .2s ease both}
-.typing-bubble{
+.typing-bub{
   background:var(--bot-bg);
   border:1px solid var(--border);
-  border-bottom-left-radius:5px;
-  border-radius:var(--radius);
-  padding:12px 16px;
-  display:flex;gap:4px;align-items:center;
+  border-radius:var(--radius);border-bottom-left-radius:5px;
+  padding:13px 17px;
+  display:flex;gap:5px;align-items:center;
 }
-.typing-bubble span{
+.typing-bub span{
   width:6px;height:6px;border-radius:50%;
   background:var(--text3);
   animation:blink 1.2s infinite;
 }
-.typing-bubble span:nth-child(2){animation-delay:.2s}
-.typing-bubble span:nth-child(3){animation-delay:.4s}
+.typing-bub span:nth-child(2){animation-delay:.2s}
+.typing-bub span:nth-child(3){animation-delay:.4s}
 @keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
 
-/* ── Action buttons area ── */
-.actions-wrap{
-  padding:8px 14px 12px;
+/* ── Actions area ───────────────────────────── */
+.actions{
+  padding:10px 14px max(calc(var(--safe-b) + 10px),14px);
   flex-shrink:0;
+  background:var(--surface);
+  border-top:1px solid var(--border);
 }
 
-/* Main menu buttons (2×2 grid) */
-.menu-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:8px;
-}
+/* 2×2 main menu */
+.menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+
 .menu-btn{
   background:var(--card);
   border:1px solid var(--border);
-  border-radius:14px;
+  border-radius:15px;
   color:var(--text);
-  font-family:var(--font-body);
-  font-size:.82rem;
-  font-weight:500;
-  padding:12px 10px;
+  font-family:var(--font);
+  font-size:.83rem;font-weight:500;
+  padding:14px 10px;
   cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:6px;
-  transition:background .18s,border-color .18s,transform .12s;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  transition:background .16s,border-color .16s,transform .1s;
   touch-action:manipulation;
   user-select:none;
   -webkit-tap-highlight-color:transparent;
-  min-height:52px;
+  min-height:56px;
 }
-.menu-btn:hover{
-  background:rgba(201,168,76,.1);
-  border-color:rgba(201,168,76,.4);
-}
-.menu-btn:active{transform:scale(.97)}
-.menu-btn .btn-icon{font-size:1.1rem}
+.menu-btn:hover{background:var(--gold-glow);border-color:rgba(201,168,76,.45)}
+.menu-btn:active{transform:scale(.96)}
+.menu-btn .mi{font-size:1.15rem}
 
-/* Inline reply buttons (row) */
-.reply-row{
-  display:flex;
-  flex-wrap:wrap;
-  gap:7px;
-  margin-top:4px;
+/* Response buttons (book + back) */
+.resp-btns{
+  display:flex;flex-direction:column;gap:8px;
   animation:fadeUp .22s ease both;
 }
-.reply-btn{
-  background:transparent;
-  border:1px solid rgba(201,168,76,.35);
-  border-radius:24px;
-  color:var(--gold2);
-  font-family:var(--font-body);
-  font-size:.8rem;
-  font-weight:500;
-  padding:7px 14px;
-  cursor:pointer;
-  transition:background .18s,border-color .18s,transform .12s;
-  touch-action:manipulation;
-  user-select:none;
-  -webkit-tap-highlight-color:transparent;
-}
-.reply-btn:hover{
-  background:rgba(201,168,76,.12);
-  border-color:var(--gold);
-}
-.reply-btn:active{transform:scale(.97)}
 
-/* Primary CTA booking button */
 .book-btn{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
   background:var(--gold);
   color:#0a0a0a;
-  font-family:var(--font-body);
-  font-size:.85rem;
-  font-weight:700;
-  padding:12px 22px;
-  border:none;
-  border-radius:28px;
-  cursor:pointer;
-  text-decoration:none;
-  transition:filter .18s,transform .12s;
+  font-family:var(--font);
+  font-size:.86rem;font-weight:700;
+  padding:14px 22px;
+  border:none;border-radius:30px;
+  cursor:pointer;text-decoration:none;
+  transition:filter .16s,transform .1s;
   touch-action:manipulation;
-  user-select:none;
   -webkit-tap-highlight-color:transparent;
-  margin-top:10px;
-  box-shadow:0 4px 20px rgba(201,168,76,.3);
+  box-shadow:0 4px 22px rgba(201,168,76,.32);
+  width:100%;
 }
 .book-btn:hover{filter:brightness(1.1)}
 .book-btn:active{transform:scale(.97)}
 
-/* Back button */
 .back-btn{
+  display:flex;align-items:center;justify-content:center;gap:6px;
   background:transparent;
   border:1px solid var(--border);
-  border-radius:24px;
+  border-radius:30px;
   color:var(--text2);
-  font-family:var(--font-body);
-  font-size:.77rem;
-  padding:6px 14px;
+  font-family:var(--font);
+  font-size:.78rem;font-weight:500;
+  padding:11px 20px;
   cursor:pointer;
-  margin-top:8px;
-  display:inline-flex;
-  align-items:center;
-  gap:5px;
-  transition:border-color .18s,color .18s;
+  transition:border-color .16s,color .16s;
   touch-action:manipulation;
   -webkit-tap-highlight-color:transparent;
+  width:100%;
 }
 .back-btn:hover{border-color:var(--text2);color:var(--text)}
 
-/* ── Divider ── */
-.date-divider{
-  display:flex;align-items:center;gap:8px;
-  color:var(--text3);font-size:.68rem;
-  padding:4px 0 8px;
-  flex-shrink:0;
-  align-self:stretch;
-}
-.date-divider::before,.date-divider::after{
-  content:'';flex:1;height:1px;background:var(--border);
-}
-
-/* ── Footer ── */
-.chat-footer{
-  padding:10px 14px max(calc(var(--safe-bot) + 10px),14px);
+/* ── Footer ────────────────────────────────── */
+.footer{
+  text-align:center;
+  padding:7px 12px max(calc(var(--safe-b) + 6px),8px);
+  font-size:.63rem;color:var(--text3);
   border-top:1px solid var(--border);
   background:var(--card);
   flex-shrink:0;
-  text-align:center;
+  line-height:1.5;
 }
-.footer-text{
-  font-size:.68rem;
-  color:var(--text3);
-  letter-spacing:.02em;
-}
-.footer-text a{color:var(--text3);text-decoration:none}
-.footer-text a:hover{color:var(--text2)}
+.footer a{color:var(--text3);text-decoration:none}
+.footer a:hover{color:var(--text2)}
 
-/* ── Responsive ── */
-@media(min-width:481px){
-  .chat-shell{
-    box-shadow:0 20px 80px rgba(0,0,0,.6);
-    border-radius:24px;
-    margin:20px auto;
-    height:calc(100dvh - 40px);
-    max-height:820px;
+/* ── Desktop card ───────────────────────────── */
+@media(min-width:500px){
+  body{overflow:auto;background:#040404}
+  .shell{
+    border-radius:26px;
+    box-shadow:0 24px 80px rgba(0,0,0,.7);
+    margin:24px auto;
+    height:calc(100dvh - 48px);
+    max-height:840px;
   }
-  html,body{overflow:auto;background:#050505}
 }
-@media(max-width:360px){
+@media(max-width:340px){
   .menu-grid{grid-template-columns:1fr}
-  .bubble{font-size:.85rem}
+  .bub{font-size:.83rem}
 }
 </style>
 </head>
 <body>
-
-<div class="chat-shell" id="chatShell">
+<div class="shell">
 
   <!-- Header -->
-  <div class="chat-header">
-    <div class="header-avatar">✂️</div>
-    <div class="header-info">
-      <div class="header-name">Barbería Cullera</div>
-      <div class="header-status">
-        <div class="status-dot"></div>
-        <span>En línea ahora</span>
-      </div>
+  <div class="header">
+    <div class="h-avatar">✂️</div>
+    <div class="h-info">
+      <div class="h-name">Cullera Barbershop</div>
+      <div class="h-status"><div class="dot"></div><span>En línea ahora</span></div>
     </div>
-    <a class="header-phone" href="tel:617545837" title="Llamar al 617 54 58 37">📞</a>
+    <a class="h-call" href="tel:617545837" title="Llamar">📞</a>
   </div>
 
   <!-- Messages -->
-  <div class="chat-messages" id="chatMessages">
-    <div class="date-divider">Hoy</div>
+  <div class="msgs" id="msgs">
+    <div class="date-sep">Hoy</div>
   </div>
 
-  <!-- Action buttons -->
-  <div class="actions-wrap" id="actionsWrap">
-    <!-- filled by JS -->
-  </div>
+  <!-- Actions -->
+  <div class="actions" id="actions"></div>
 
   <!-- Footer -->
-  <div class="chat-footer">
-    <div class="footer-text">
-      Barbería Cullera · Carrer Ateneu Musical, 63a, Cullera · <a href="tel:617545837">617 54 58 37</a>
-    </div>
+  <div class="footer">
+    Carrer Ateneu Musical, 63a · Cullera, Valencia
+    · <a href="tel:617545837">617 54 58 37</a>
   </div>
 
 </div>
-
 <script>
-/* ════════════════════════════════
-   CONFIG
-════════════════════════════════ */
-const BOOKING_URL = 'https://cut.yeasyapp.com/PjiP85';
+/* ══════════════════════════════════════════
+   CONFIG — only change things here
+══════════════════════════════════════════ */
+const BOOK_URL = 'https://cut.yeasyapp.com/PjiP85';
 
 const PRICES = [
-  { name: 'Corte de pelo',    price: '16€' },
-  { name: 'Arreglo de barba', price: '11€' },
-  { name: 'Corte + barba',    price: '21€' },
-  { name: 'Degradado',        price: '14€' },
-  { name: 'Corte + diseño',   price: '18€' },
-  { name: 'Mechas',           price: '40€' },
-  { name: 'Color completo',   price: '60€' },
+  ['✂️ Corte de pelo',      '16€'],
+  ['🧔 Arreglo de barba',   '11€'],
+  ['✂️🧔 Corte + barba',    '21€'],
+  ['💈 Degradado',          '14€'],
+  ['🎨 Corte + diseño',     '18€'],
+  ['🌟 Mechas',             '40€'],
+  ['🎨 Color completo',     '60€'],
 ];
 
-const MAIN_BUTTONS = [
-  { icon: '✂️', label: 'Corte',    key: 'corte' },
-  { icon: '🧔', label: 'Barba',    key: 'barba' },
-  { icon: '💰', label: 'Precios',  key: 'precios' },
-  { icon: '📅', label: 'Reservar', key: 'reservar' },
+const MENU = [
+  { icon:'✂️', label:'Corte',         key:'corte'   },
+  { icon:'🧔', label:'Barba',         key:'barba'   },
+  { icon:'💰', label:'Precios',       key:'precios' },
+  { icon:'📅', label:'Reservar cita', key:'reservar'},
 ];
 
 const RESPONSES = {
   corte: {
-    userText: '✂️ Corte',
-    botHtml:  'Ofrecemos cortes modernos y clásicos para todo tipo de cabello: degradados, cortes a tijera, diseños personalizados… Nuestros barberos te ayudarán a encontrar el estilo que mejor te queda. ✂️',
+    user: '✂️ Corte',
+    bot:  'Ofrecemos cortes modernos y clásicos para todo tipo de cabello. Nuestros barberos profesionales te darán el estilo que buscas. 💈\n\nPara ver disponibilidad y reservar tu cita, visita nuestro sistema de reservas 👇',
   },
   barba: {
-    userText: '🧔 Barba',
-    botHtml:  'Arreglamos y perfilamos tu barba con estilo profesional: afeitado con vapor, diseño, relleno de huecos… Sal de la silla sintiéndote como nuevo. 💈',
+    user: '🧔 Barba',
+    bot:  'Arreglamos, perfilamos y cuidamos tu barba con técnica profesional. Desde arreglos simples hasta estilos completos. 🧔\n\nPara reservar tu cita con nuestros expertos 👇',
   },
   precios: {
-    userText: '💰 Precios',
-    botHtml:  'Aquí tienes todos nuestros precios:',
-    priceList: true,
+    user: '💰 Precios',
+    bot:  'Estos son nuestros precios actuales: 💈',
+    prices: true,
   },
   reservar: {
-    userText: '📅 Reservar',
-    botHtml:  '¡Reserva tu cita ahora mismo! Solo te tomará un minuto. 📅',
+    user: '📅 Reservar cita',
+    bot:  '¡Perfecto! Para reservar tu cita en Cullera Barbershop, haz clic en el botón de abajo y elige tu día y hora favoritos. ✅\n\n¡Te esperamos! 💈',
   },
 };
 
-/* ════════════════════════════════
+/* ══════════════════════════════════════════
    HELPERS
-════════════════════════════════ */
-function nowTime() {
-  return new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+══════════════════════════════════════════ */
+const msgsEl   = document.getElementById('msgs');
+const actionsEl= document.getElementById('actions');
+
+function t(){
+  return new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+}
+function scroll(){
+  msgsEl.scrollTo({top:msgsEl.scrollHeight,behavior:'smooth'});
+}
+function esc(s){
+  return String(s||'')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\n/g,'<br>');
 }
 
-function scrollBottom() {
-  const el = document.getElementById('chatMessages');
-  if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
-}
-
-function clearActions() {
-  document.getElementById('actionsWrap').innerHTML = '';
-}
-
-/* ── Append a row ── */
-function appendRow(role, contentHtml, ts) {
-  const msgs = document.getElementById('chatMessages');
-
-  if (role === 'bot') {
-    const row = document.createElement('div');
-    row.className = 'msg-row bot';
+/* append a chat row */
+function addRow(role, html){
+  const row = document.createElement('div');
+  row.className = 'row '+role;
+  const now = t();
+  if(role==='bot'){
     row.innerHTML = `
-      <div class="bot-avatar">✂️</div>
-      <div style="display:flex;flex-direction:column;gap:2px">
-        <div class="bubble">${contentHtml}</div>
-        <span class="ts">${ts}</span>
+      <div class="av">✂️</div>
+      <div style="display:flex;flex-direction:column;gap:1px">
+        <div class="bub">${html}</div>
+        <span class="ts">${now}</span>
       </div>`;
-    msgs.appendChild(row);
   } else {
-    const row = document.createElement('div');
-    row.className = 'msg-row user';
     row.innerHTML = `
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
-        <div class="bubble">${contentHtml}</div>
-        <span class="ts">${ts}</span>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px">
+        <div class="bub">${html}</div>
+        <span class="ts">${now}</span>
       </div>`;
-    msgs.appendChild(row);
   }
-  scrollBottom();
+  msgsEl.appendChild(row);
+  scroll();
 }
 
-/* ── Typing bubble ── */
-function showTyping() {
-  const msgs = document.getElementById('chatMessages');
+/* typing indicator */
+function showTyping(){
   const el = document.createElement('div');
-  el.className = 'typing-row';
-  el.id = 'typingIndicator';
-  el.innerHTML = `
-    <div class="bot-avatar">✂️</div>
-    <div class="typing-bubble">
-      <span></span><span></span><span></span>
-    </div>`;
-  msgs.appendChild(el);
-  scrollBottom();
+  el.className='typing-row'; el.id='ty';
+  el.innerHTML=`<div class="av">✂️</div><div class="typing-bub"><span></span><span></span><span></span></div>`;
+  msgsEl.appendChild(el); scroll();
+}
+function hideTyping(){
+  const el=document.getElementById('ty');
+  if(el) el.remove();
 }
 
-function hideTyping() {
-  const el = document.getElementById('typingIndicator');
-  if (el) el.remove();
-}
-
-/* ── Build price list HTML ── */
-function buildPriceListHtml() {
-  const items = PRICES.map(p =>
-    `<li><span class="svc-name">${p.name}</span><span class="svc-price">${p.price}</span></li>`
+/* build price list html */
+function priceHtml(){
+  const items = PRICES.map(([n,p])=>
+    `<li><span class="sn">${n}</span><span class="sp">${p}</span></li>`
   ).join('');
   return `<ul class="price-list">${items}</ul>`;
 }
 
-/* ── Show post-response buttons ── */
-function showResponseActions() {
-  const wrap = document.getElementById('actionsWrap');
-  wrap.innerHTML = '';
+/* clear actions panel */
+function clearActions(){actionsEl.innerHTML='';}
 
-  const row = document.createElement('div');
-  row.className = 'reply-row';
-
-  const bookBtn = document.createElement('a');
-  bookBtn.className = 'book-btn';
-  bookBtn.href = BOOKING_URL;
-  bookBtn.target = '_blank';
-  bookBtn.rel = 'noopener noreferrer';
-  bookBtn.innerHTML = '📅 Reservar ahora';
-
-  const backBtn = document.createElement('button');
-  backBtn.className = 'back-btn';
-  backBtn.innerHTML = '← Volver al inicio';
-  backBtn.addEventListener('click', showMainMenu);
-
-  row.appendChild(bookBtn);
-  row.appendChild(backBtn);
-  wrap.appendChild(row);
-}
-
-/* ── Show main menu ── */
-function showMainMenu() {
-  const wrap = document.getElementById('actionsWrap');
-  wrap.innerHTML = '';
-
-  const grid = document.createElement('div');
-  grid.className = 'menu-grid';
-
-  MAIN_BUTTONS.forEach(btn => {
-    const el = document.createElement('button');
-    el.className = 'menu-btn';
-    el.innerHTML = `<span class="btn-icon">${btn.icon}</span><span>${btn.label}</span>`;
-    el.addEventListener('click', () => handleMenu(btn.key, btn.icon + ' ' + btn.label));
-    grid.appendChild(el);
-  });
-
-  wrap.appendChild(grid);
-}
-
-/* ── Handle menu tap ── */
-function handleMenu(key, userLabel) {
+/* show booking + back buttons */
+function showRespBtns(){
   clearActions();
+  const wrap = document.createElement('div');
+  wrap.className='resp-btns';
 
-  const ts = nowTime();
-  const resp = RESPONSES[key];
+  const bk = document.createElement('a');
+  bk.className='book-btn';
+  bk.href=BOOK_URL;
+  bk.target='_blank';
+  bk.rel='noopener noreferrer';
+  bk.innerHTML='📅 Reservar en cut.yeasyapp.com';
 
-  /* User bubble */
-  appendRow('user', userLabel, ts);
+  const back = document.createElement('button');
+  back.className='back-btn';
+  back.innerHTML='🔙 Volver al menú';
+  back.addEventListener('click', showMainMenu);
 
-  /* Typing delay */
-  setTimeout(() => {
-    showTyping();
-    setTimeout(() => {
-      hideTyping();
-      const ts2 = nowTime();
-
-      if (key === 'reservar') {
-        /* Direct redirect for Reservar */
-        appendRow('bot', resp.botHtml, ts2);
-        window.open(BOOKING_URL, '_blank', 'noopener,noreferrer');
-        showResponseActions();
-      } else if (resp.priceList) {
-        appendRow('bot', resp.botHtml + buildPriceListHtml(), ts2);
-        showResponseActions();
-      } else {
-        appendRow('bot', resp.botHtml, ts2);
-        showResponseActions();
-      }
-    }, 900);
-  }, 300);
+  wrap.appendChild(bk);
+  wrap.appendChild(back);
+  actionsEl.appendChild(wrap);
 }
 
-/* ════════════════════════════════
-   BOOT
-════════════════════════════════ */
-(function init() {
-  const ts = nowTime();
+/* show 2×2 main menu */
+function showMainMenu(){
+  clearActions();
+  const grid = document.createElement('div');
+  grid.className='menu-grid';
+  MENU.forEach(({icon,label,key})=>{
+    const btn = document.createElement('button');
+    btn.className='menu-btn';
+    btn.innerHTML=`<span class="mi">${icon}</span><span>${label}</span>`;
+    btn.addEventListener('click', ()=>handleTap(key));
+    grid.appendChild(btn);
+  });
+  actionsEl.appendChild(grid);
+}
 
-  /* Welcome message with delay */
-  setTimeout(() => {
+/* handle menu tap */
+function handleTap(key){
+  clearActions();
+  const r = RESPONSES[key];
+
+  /* user bubble */
+  addRow('usr', esc(r.user));
+
+  /* if Reservar → open immediately then show bot + buttons */
+  if(key==='reservar'){
+    window.open(BOOK_URL,'_blank','noopener,noreferrer');
+  }
+
+  /* typing delay then bot reply */
+  setTimeout(()=>{
     showTyping();
-    setTimeout(() => {
+    setTimeout(()=>{
       hideTyping();
-      appendRow('bot',
-        '¡Hola! 👋 Bienvenido a <strong>Barbería Cullera</strong>. Estoy aquí para ayudarte. ¿En qué te puedo ayudar hoy? ✂️',
-        nowTime()
+      const html = r.prices
+        ? esc(r.bot) + priceHtml()
+        : esc(r.bot);
+      addRow('bot', html);
+      showRespBtns();
+    }, 950);
+  }, 280);
+}
+
+/* ══════════════════════════════════════════
+   BOOT
+══════════════════════════════════════════ */
+(function boot(){
+  setTimeout(()=>{
+    showTyping();
+    setTimeout(()=>{
+      hideTyping();
+      addRow('bot',
+        '✂️ ¡Hola! Bienvenido a <strong>Cullera Barbershop</strong>.<br><br>' +
+        'Soy tu asistente virtual. Puedo informarte sobre nuestros servicios, precios y horarios.<br><br>' +
+        'Para reservar tu cita, te redigiré a nuestro sistema de reservas.<br><br>' +
+        '¿En qué te puedo ayudar? 👇'
       );
       showMainMenu();
-    }, 1000);
+    }, 1100);
   }, 500);
 })();
 </script>
-
 </body>
 </html>
